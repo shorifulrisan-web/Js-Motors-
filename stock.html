@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101d35">
+<title>JS Motors – স্টক ও বিশ্লেষণ</title>
+<style>
+:root{--navy:#101d35;--gold:#d6aa45;--bg:#f3f5f8;--ink:#172033;--muted:#6c7688;--line:#e4e8ef;--green:#16845b;--red:#c44848}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif;color:var(--ink);padding-bottom:40px}
+header{background:linear-gradient(120deg,#101d35,#1b3155);color:#fff;padding:16px 20px}
+header h1{margin:0;font-size:20px}
+header small{color:#d9c18a;letter-spacing:.5px;font-size:12px}
+.wrap{max-width:1100px;margin:auto;padding:14px}
+.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 2px 8px #17203308}
+h2{font-size:17px;margin:0 0 10px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+.bar h2{margin:0;flex:1;min-width:200px}
+input,select{padding:9px 10px;border:1px solid #d8dee8;border-radius:9px;font:inherit;background:#fff;color:var(--ink)}
+input.s{flex:1;min-width:180px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px}
+.k{color:var(--muted);font-size:12px}
+.v{font-size:20px;font-weight:800;margin-top:4px}
+.g{color:var(--green)}.r{color:var(--red)}
+.tw{overflow:auto;border:1px solid var(--line);border-radius:10px}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:460px}
+th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+th{background:#fafbfd;color:var(--muted);font-weight:650}
+.n{text-align:right;white-space:nowrap}
+.tag{font-size:11px;padding:2px 7px;border-radius:20px;white-space:nowrap}
+.t-hot{background:#dff3ea;color:#116546}.t-slow{background:#fbf0d3;color:#7a5a0b}.t-dead{background:#fae8e8;color:#a12e2e}
+.note{font-size:12px;color:var(--muted);line-height:1.6;margin:8px 0 0}
+.empty{text-align:center;color:var(--muted);padding:20px}
+.share{display:flex;align-items:center;gap:8px;min-width:120px}
+.share i{display:block;height:8px;border-radius:5px;background:linear-gradient(90deg,#16845b,#27c08a)}
+.grid2{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:820px){.grid2{grid-template-columns:1fr 1fr}}
+.sub{font-size:13px;color:var(--muted);margin:0 0 8px}
+.rank{display:inline-block;min-width:22px;text-align:center;font-weight:800;color:var(--navy)}
+</style>
+</head>
+<body>
+<header><h1>JS MOTORS · স্টক ও বিশ্লেষণ</h1><small>কোন মাল কত কেনা, কত বিক্রি, কে কত কিনছে</small></header>
+<div class="wrap">
+  <div class="bar">
+    <label for="period">সময়কাল:</label>
+    <select id="period" onchange="render()">
+      <option value="30">গত ৩০ দিন</option>
+      <option value="90" selected>গত ৯০ দিন</option>
+      <option value="180">গত ৬ মাস</option>
+      <option value="365">গত ১২ মাস</option>
+      <option value="0">সব সময়</option>
+    </select>
+    <span class="note" id="dataInfo"></span>
+  </div>
+  <div id="msg"></div>
+  <div id="app" style="display:none">
+    <div class="cards" id="cards"></div>
+
+    <div class="box">
+      <div class="bar">
+        <h2>সব পার্টস: কত কেনা, কত বিক্রি</h2>
+        <input class="s" id="pSearch" placeholder="নাম, কোড বা ক্যাটাগরি দিয়ে খুঁজুন" oninput="render()">
+        <select id="pCat" onchange="render()"></select>
+      </div>
+      <div class="tw">
+        <table>
+          <thead><tr>
+            <th>পার্টস</th><th>কোড</th><th>ক্যাটাগরি</th>
+            <th class="n">কেনা (পিস)</th><th class="n">বিক্রি (পিস)</th><th class="n">স্টক</th>
+            <th class="n">বিক্রয়</th><th class="n">লাভ</th><th class="n">লাভ %</th><th>অবস্থা</th>
+          </tr></thead>
+          <tbody id="pBody"></tbody>
+        </table>
+      </div>
+      <p class="note">"বেশি বিক্রি" হলো সবচেয়ে বেশি বিক্রি হওয়া ৫টি। "কম বিক্রি" হলো বিক্রি হওয়া পার্টসের মধ্যে সবচেয়ে কম বিক্রি হওয়া ৫টি। "অচল" মানে স্টক আছে কিন্তু এই সময়ে একটিও বিক্রি হয়নি।</p>
+    </div>
+
+    <div class="grid2">
+      <div class="box">
+        <h2>সেরা পার্টস (বেশি বিক্রি)</h2>
+        <div class="tw"><table id="topTbl"><thead><tr><th>#</th><th>পার্টস</th><th class="n">বিক্রি</th><th class="n">বিক্রয়</th><th class="n">লাভ %</th></tr></thead><tbody id="topBody"></tbody></table></div>
+      </div>
+      <div class="box">
+        <h2>কম বিক্রি (বিক্রি হয়েছে কিন্তু কম)</h2>
+        <div class="tw"><table><thead><tr><th>#</th><th>পার্টস</th><th class="n">বিক্রি</th><th class="n">বিক্রয়</th><th class="n">লাভ %</th></tr></thead><tbody id="slowBody"></tbody></table></div>
+      </div>
+      <div class="box">
+        <h2>অচল মাল (স্টক আছে, বিক্রি নেই)</h2>
+        <p class="sub">মূল্য অনুযায়ী সাজানো। শেষ বিক্রির তারিখও দেখানো হলো।</p>
+        <div class="tw"><table><thead><tr><th>পার্টস</th><th class="n">স্টক</th><th class="n">স্টকের মূল্য</th><th>শেষ বিক্রি</th></tr></thead><tbody id="deadBody"></tbody></table></div>
+      </div>
+      <div class="box">
+        <h2>ক্যাটাগরি অনুযায়ী</h2>
+        <p class="sub">বিক্রয়ের বড় থেকে ছোট ক্রমে। "লাভের অংশ" মানে মোট লাভের কতটা এই ক্যাটাগরি থেকে এসেছে।</p>
+        <div class="tw"><table><thead><tr><th>ক্যাটাগরি</th><th class="n">বিক্রি (পিস)</th><th class="n">বিক্রয়</th><th class="n">লাভ %</th><th>লাভের অংশ</th></tr></thead><tbody id="catBody"></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>সেরা কাস্টমার (বিক্রয় অনুযায়ী)</h2>
+      <p class="sub">নাম বা ফোন না দেওয়া বিক্রয়গুলো "নামহীন" হিসেবে একসাথে দেখানো হয়।</p>
+      <div class="tw"><table><thead><tr><th>#</th><th>কাস্টমার</th><th>ফোন</th><th class="n">বিল সংখ্যা</th><th class="n">মোট কেনা</th><th class="n">লাভ</th><th class="n">বাকি</th></tr></thead><tbody id="custBody"></tbody></table></div>
+    </div>
+
+    <div class="box">
+      <div class="bar">
+        <h2>কাস্টমার বেছে দেখুন: কী কী কিনেছে</h2>
+        <input class="s" id="cSearch" placeholder="কাস্টমারের নাম বা ফোন খুঁজুন" oninput="renderCustSel()">
+        <select id="cSel" onchange="renderCustDetail()"></select>
+      </div>
+      <div id="cDetail"><div class="empty">কাস্টমার বাছুন</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY='jsmotors_v2';
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const money=n=>'৳'+(Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:0});
+const pc=(a,b)=>b>0?(Math.round(a/b*1000)/10).toLocaleString('en-IN')+'%':'—';
+const dt=ts=>ts?new Date(ts).toLocaleDateString('bn-BD'):'';
+const card=(k,v,c)=>'<div class="card"><div class="k">'+k+'</div><div class="v '+(c||'')+'">'+v+'</div></div>';
+const stockOf=p=>p.batches.reduce((s,b)=>s+b.qty,0);
+const stockVal=p=>p.batches.reduce((s,b)=>s+b.qty*b.cost,0);
+
+let db=null, CU={};
+try{db=JSON.parse(localStorage.getItem(KEY))}catch(_){}
+if(!db||!Array.isArray(db.parts)||!Array.isArray(db.sales)||!Array.isArray(db.purchases)){
+  $('msg').innerHTML='<div class="box">এখানে JS Motors-এর ডেটা পাওয়া যায়নি। index.html অ্যাপটি এই পাতার সাথে একই ব্রাউজার ও একই ঠিকানায় (যেমন একই ফোল্ডার/সার্ভার থেকে) খুলে ডেটা থাকলে তারপর এই পাতাটি খুলুন।</div>';
+}else{
+  $('app').style.display='block';
+  const cats=[...new Set(db.parts.map(p=>p.cat||'অন্যান্য'))].sort();
+  $('pCat').innerHTML='<option value="">সব ক্যাটাগরি</option>'+cats.map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('');
+  $('dataInfo').textContent='পার্টস '+db.parts.length+'টি · বিক্রয় এন্ট্রি '+db.sales.length+'টি';
+  render();
+}
+
+function render(){
+  const days=+$('period').value, from=days?Date.now()-days*864e5:0;
+  const P=new Map();
+  db.parts.forEach(p=>P.set(p.id,{p,stock:stockOf(p),sval:stockVal(p),bq:0,sq:0,s:0,g:0,c:0,last:0}));
+  db.purchases.forEach(x=>{const r=P.get(x.pid);if(r&&x.ts>=from)r.bq+=x.qty});
+  db.sales.forEach(x=>{
+    const r=P.get(x.pid);if(!r)return;
+    r.last=Math.max(r.last,x.ts);
+    if(x.ts>=from){r.sq+=x.qty;r.s+=x.total;r.g+=x.profit;r.c+=x.cost}
+  });
+  const rows=[...P.values()];
+  const S=db.sales.filter(x=>x.ts>=from), B=db.purchases.filter(x=>x.ts>=from);
+  const totS=S.reduce((a,x)=>a+x.total,0), totG=S.reduce((a,x)=>a+x.profit,0), totC=S.reduce((a,x)=>a+x.cost,0), totB=B.reduce((a,x)=>a+x.total,0);
+  const dead=rows.filter(r=>r.stock>0&&r.sq===0).sort((a,b)=>b.sval-a.sval);
+  const deadV=dead.reduce((a,r)=>a+r.sval,0), stockV=rows.reduce((a,r)=>a+r.sval,0);
+  $('cards').innerHTML=card('এই সময়ে কেনা',money(totB))+card('এই সময়ে বিক্রয়',money(totS))+card('গ্রস লাভ',money(totG),'g')+card('গড় লাভ %',pc(totG,totC),'g')+card('মোট স্টকের মূল্য (ক্রয়মূল্যে)',money(stockV))+card('অচল মাল',dead.length+'টি · '+money(deadV),'r');
+
+  // main product table
+  const q=$('pSearch').value.trim().toLowerCase(), cf=$('pCat').value;
+  const sold=rows.filter(r=>r.sq>0).sort((a,b)=>b.sq-a.sq||b.s-a.s);
+  const hot=new Set(sold.slice(0,5).map(r=>r.p.id));
+  const slow=new Set(sold.slice(-5).filter(r=>!hot.has(r.p.id)).map(r=>r.p.id));
+  const tag=r=>{
+    if(r.stock>0&&r.sq===0)return '<span class="tag t-dead">অচল</span>';
+    if(hot.has(r.p.id))return '<span class="tag t-hot">বেশি বিক্রি</span>';
+    if(slow.has(r.p.id))return '<span class="tag t-slow">কম বিক্রি</span>';
+    return '';
+  };
+  const list=rows.filter(r=>(!cf||r.p.cat===cf)&&(!q||(r.p.name+' '+(r.p.code||'')+' '+(r.p.cat||'')).toLowerCase().includes(q)))
+    .sort((a,b)=>b.sq-a.sq||b.s-a.s||a.p.name.localeCompare(b.p.name));
+  $('pBody').innerHTML=list.map(r=>'<tr><td>'+esc(r.p.name)+'</td><td>'+esc(r.p.code)+'</td><td>'+esc(r.p.cat)+'</td>'
+    +'<td class="n">'+r.bq+'</td><td class="n">'+r.sq+'</td><td class="n">'+r.stock+'</td>'
+    +'<td class="n">'+money(r.s)+'</td><td class="n '+(r.g<0?'r':'g')+'">'+money(r.g)+'</td><td class="n">'+pc(r.g,r.c)+'</td><td>'+tag(r)+'</td></tr>').join('')
+    ||'<tr><td colspan="10" class="empty">কিছু পাওয়া যায়নি</td></tr>';
+
+  const prow=(r,i)=>'<tr><td><span class="rank">'+(i+1)+'</span></td><td>'+esc(r.p.name)+'</td><td class="n">'+r.sq+'</td><td class="n">'+money(r.s)+'</td><td class="n">'+pc(r.g,r.c)+'</td></tr>';
+  $('topBody').innerHTML=sold.slice(0,10).map(prow).join('')||'<tr><td colspan="5" class="empty">এই সময়ে বিক্রি নেই</td></tr>';
+  $('slowBody').innerHTML=[...sold].reverse().slice(0,10).map(prow).join('')||'<tr><td colspan="5" class="empty">এই সময়ে বিক্রি নেই</td></tr>';
+  $('deadBody').innerHTML=dead.map(r=>'<tr><td>'+esc(r.p.name)+'</td><td class="n">'+r.stock+'</td><td class="n">'+money(r.sval)+'</td><td>'+(r.last?dt(r.last):'কখনো বিক্রি হয়নি')+'</td></tr>').join('')
+    ||'<tr><td colspan="4" class="empty">অচল মাল নেই</td></tr>';
+
+  // categories
+  const C={};rows.forEach(r=>{const k=r.p.cat||'অন্যান্য';const c=C[k]||(C[k]={sq:0,s:0,g:0,c:0});c.sq+=r.sq;c.s+=r.s;c.g+=r.g;c.c+=r.c});
+  const posG=Object.values(C).reduce((a,c)=>a+Math.max(0,c.g),0);
+  $('catBody').innerHTML=Object.entries(C).sort((a,b)=>b[1].s-a[1].s).map(([k,c])=>{
+    const sh=posG>0?Math.max(0,c.g)/posG*100:0;
+    return '<tr><td>'+esc(k)+'</td><td class="n">'+c.sq+'</td><td class="n">'+money(c.s)+'</td><td class="n">'+pc(c.g,c.c)+'</td>'
+      +'<td><div class="share"><i style="width:'+Math.round(sh)+'px"></i>'+(Math.round(sh*10)/10)+'%</div></td></tr>';
+  }).join('')||'<tr><td colspan="5" class="empty">এই সময়ে বিক্রি নেই</td></tr>';
+
+  // customers
+  CU=buildCustomers(S);
+  const cl=Object.values(CU).sort((a,b)=>b.s-a.s);
+  $('custBody').innerHTML=cl.slice(0,20).map((c,i)=>'<tr><td><span class="rank">'+(i+1)+'</span></td><td>'+esc(c.name)+'</td><td>'+esc(c.ph)+'</td><td class="n">'+c.ids.size+'</td><td class="n">'+money(c.s)+'</td><td class="n '+(c.g<0?'r':'g')+'">'+money(c.g)+'</td><td class="n">'+(c.due>0?'<span class="r">'+money(c.due)+'</span>':'—')+'</td></tr>').join('')
+    ||'<tr><td colspan="7" class="empty">এই সময়ে বিক্রি নেই</td></tr>';
+  renderCustSel();
+}
+
+function buildCustomers(S){
+  const M={};
+  S.forEach(x=>{
+    const name=(x.customer||'').trim()||'নামহীন', ph=(x.cphone||'').trim(), k=name+'|'+ph;
+    const c=M[k]||(M[k]={k,name,ph,ids:new Set(),s:0,g:0,due:0,lines:[]});
+    c.ids.add(x.bid||x.id);c.s+=x.total;c.g+=x.profit;c.due+=x.due>0?x.due:0;c.lines.push(x);
+  });
+  return M;
+}
+
+function renderCustSel(){
+  const sel=$('cSel'), prev=sel.value, s=$('cSearch').value.trim().toLowerCase();
+  const cl=Object.values(CU).sort((a,b)=>b.s-a.s).filter(c=>!s||(c.name+' '+c.ph).toLowerCase().includes(s));
+  sel.innerHTML='<option value="">কাস্টমার বাছুন</option>'+cl.map(c=>'<option value="'+esc(c.k)+'">'+esc(c.name)+(c.ph?' ('+esc(c.ph)+')':'')+' · '+money(c.s)+'</option>').join('');
+  if(prev&&cl.some(c=>c.k===prev))sel.value=prev;
+  renderCustDetail();
+}
+
+function renderCustDetail(){
+  const k=$('cSel').value, c=CU[k];
+  if(!c){$('cDetail').innerHTML='<div class="empty">কাস্টমার বাছুন</div>';return}
+  const lines=[...c.lines].sort((a,b)=>b.ts-a.ts);
+  const name=p=>{const x=db.parts.find(p2=>p2.id===p.pid);return x?x.name:(p.name||'?')};
+  $('cDetail').innerHTML='<div class="cards" style="margin-bottom:10px">'+card('মোট বিল',c.ids.size)+card('মোট কেনা',money(c.s))+card('মোট লাভ দিয়েছে',money(c.g),'g')+card('বাকি',money(c.due),c.due>0?'r':'')+'</div>'
+    +'<div class="tw"><table><thead><tr><th>তারিখ</th><th>পার্টস</th><th class="n">পরিমাণ</th><th class="n">দাম</th><th class="n">মোট</th><th class="n">লাভ</th><th class="n">বাকি</th></tr></thead><tbody>'
+    +lines.map(x=>'<tr><td>'+esc(x.date||dt(x.ts))+'</td><td>'+esc(name(x))+'</td><td class="n">'+x.qty+'</td><td class="n">'+money(x.price)+'</td><td class="n">'+money(x.total)+'</td><td class="n '+(x.profit<0?'r':'g')+'">'+money(x.profit)+'</td><td class="n">'+(x.due>0?money(x.due):'—')+'</td></tr>').join('')
+    +'</tbody></table></div>';
+}
+</script>
+</body>
+</html>

@@ -61,7 +61,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
 </style></head>
 <body>
 <header><div class="brand">JS MOTORS <small>PARTS & BUSINESS MANAGER</small></div>
-<div class="hright"><div class="hstock"><small>বর্তমান স্টক (ক্রয়মূল্যে)</small><b id="hStock">৳0</b></div><button id="installBtn" style="display:none" onclick="installApp()">📲 ইনস্টল</button><input id="userName" placeholder="আপনার নাম (ইতিহাসের জন্য)" onchange="setUser(this.value)"><button id="undoBtn" onclick="undo()" disabled>↩ Undo</button><div class="pill">অফলাইন · V2</div></div></header>
+<div class="hright"><div class="hstock"><small>বর্তমান স্টক (ক্রয়মূল্যে)</small><b id="hStock">৳0</b></div><button id="installBtn" style="display:none" onclick="installApp()">📲 ইনস্টল</button><input id="userName" placeholder="আপনার নাম (ইতিহাসের জন্য)" onchange="setUser(this.value)"><button id="undoBtn" onclick="undo()" disabled>↩ Undo</button><button id="redoBtn" onclick="redo()" disabled>↪ Redo</button><div class="pill">অফলাইন · V2</div></div></header>
 <div class="wrap">
 <nav class="tabs">
 <button class="tab active" data-tab="home">ড্যাশবোর্ড</button><button class="tab" data-tab="parts">পার্টস</button><button class="tab" data-tab="buy">ক্রয়</button><button class="tab" data-tab="sell">বিক্রয়</button><button class="tab" data-tab="dueTab">বাকি আদায়</button><button class="tab" data-tab="cashTab">টাকার খাতা</button><button class="tab" data-tab="vizTab">📊 গ্রাফ</button><button class="tab" data-tab="reports">লাভ ও রিপোর্ট</button><button class="tab" data-tab="logTab">ইতিহাস</button><button class="tab" data-tab="backupTab">ব্যাকআপ</button>
@@ -93,13 +93,13 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
 <div class="box" style="margin-top:14px"><div class="row"><h2 style="flex:2">পার্টস তালিকা</h2><input id="partSearch" placeholder="নাম বা কোড দিয়ে খুঁজুন" oninput="renderParts()"><button class="sm" type="button" style="flex:0 0 auto" onclick="scanBarcode(c=>{partSearch.value=c;renderParts()})">📷 স্ক্যান</button><select id="partCatFilter" onchange="renderParts()"></select></div><div class="tablewrap"><table><thead><tr><th>ছবি</th><th>নাম</th><th>কোড</th><th>ক্যাটাগরি</th><th>স্টক</th><th>গড় ক্রয়মূল্য</th><th>বিক্রয়মূল্য</th><th>লাভ % (দাম বনাম গড় ক্রয়)</th><th>অ্যাকশন</th></tr></thead><tbody id="partsBody"></tbody></table></div></div>
 </section>
 <section id="buy" class="panel"><div class="box"><h2>মাল ক্রয় এন্ট্রি</h2><div class="grid">
-<div><label>পার্টস</label><select id="buyPart"></select><div class="row" style="margin-top:6px"><input id="buyCode" placeholder="কোড লিখুন / স্ক্যান করুন" onkeydown="if(event.key==='Enter'){event.preventDefault();pickByCode('buyPart','buyCode')}"><button class="sm" type="button" style="flex:0 0 auto" onclick="scanTo('buyPart','buyCode')">📷 স্ক্যান</button></div></div><div><label>পরিমাণ</label><input id="buyQty" type="number" min="1" value="1"></div>
+<div><label>পার্টস</label><input id="buyPartS" placeholder="পার্টস খুঁজুন (নাম বা কোড)" oninput="partSearch('buyPart')" onkeydown="if(event.key==='Enter'){event.preventDefault();partPick('buyPart')}" style="margin-bottom:6px"><select id="buyPart"></select><div class="row" style="margin-top:6px"><input id="buyCode" placeholder="কোড লিখুন / স্ক্যান করুন" onkeydown="if(event.key==='Enter'){event.preventDefault();pickByCode('buyPart','buyCode')}"><button class="sm" type="button" style="flex:0 0 auto" onclick="scanTo('buyPart','buyCode')">📷 স্ক্যান</button></div></div><div><label>পরিমাণ</label><input id="buyQty" type="number" min="1" value="1"></div>
 <div><label>প্রতি পিস ক্রয়মূল্য (৳)</label><input id="buyCost" type="number" min="0" step=".01"></div><div><label>সাপ্লায়ার (ঐচ্ছিক)</label><input id="supplier" placeholder="সাপ্লায়ারের নাম"></div><div><label>সাপ্লায়ারের ফোন নম্বর (ঐচ্ছিক)</label><input id="supplierPhone" type="tel" inputmode="tel" placeholder="01XXXXXXXXX"></div><div><label>পরিশোধ টাকা (ফাঁকা = পুরো পরিশোধ)</label><input id="buyPaid" type="number" min="0" step=".01" placeholder="পুরো"></div>
 </div><div class="actions"><button class="primary" onclick="purchase()">ক্রয় সংরক্ষণ ও স্টক বাড়ান</button></div><p class="note">প্রতিটি ক্রয় আলাদা ব্যাচ হিসেবে সংরক্ষিত হবে। বিক্রির সময় আগে কেনা স্টক আগে কমবে (FIFO পদ্ধতি)।</p></div>
 <div class="box" style="margin-top:14px"><div class="row"><h2 style="flex:2">সাম্প্রতিক ক্রয়</h2><input id="buySearch" placeholder="পার্টস, সাপ্লায়ার বা ফোন খুঁজুন" oninput="buyLimit=30;render()"></div><div class="tablewrap"><table><thead><tr><th>তারিখ</th><th>পার্টস</th><th>পরিমাণ</th><th>একক ক্রয়মূল্য</th><th>মোট</th><th>সাপ্লায়ার</th><th>অ্যাকশন</th></tr></thead><tbody id="buyBody"></tbody></table></div><button id="buyMore" class="more" data-act="moreBuy">আরও দেখান</button></div>
 </section>
 <section id="sell" class="panel"><div class="box"><h2>নতুন বিক্রয়</h2><div class="grid">
-<div><label>পার্টস</label><select id="sellPart" onchange="suggestPrice()"></select><div class="row" style="margin-top:6px"><input id="sellCode" placeholder="কোড লিখুন / স্ক্যান করুন" onkeydown="if(event.key==='Enter'){event.preventDefault();pickByCode('sellPart','sellCode')}"><button class="sm" type="button" style="flex:0 0 auto" onclick="scanTo('sellPart','sellCode')">📷 স্ক্যান</button></div></div><div><label>পরিমাণ</label><input id="sellQty" type="number" min="1" value="1" oninput="updatePreview()"></div>
+<div><label>পার্টস</label><input id="sellPartS" placeholder="পার্টস খুঁজুন (নাম বা কোড)" oninput="partSearch('sellPart')" onkeydown="if(event.key==='Enter'){event.preventDefault();partPick('sellPart')}" style="margin-bottom:6px"><select id="sellPart" onchange="suggestPrice()"></select><div class="row" style="margin-top:6px"><input id="sellCode" placeholder="কোড লিখুন / স্ক্যান করুন" onkeydown="if(event.key==='Enter'){event.preventDefault();pickByCode('sellPart','sellCode')}"><button class="sm" type="button" style="flex:0 0 auto" onclick="scanTo('sellPart','sellCode')">📷 স্ক্যান</button></div></div><div><label>পরিমাণ</label><input id="sellQty" type="number" min="1" value="1" oninput="updatePreview()"></div>
 <div><label>প্রতি পিস বিক্রয়মূল্য (৳)</label><input id="sellPrice" type="number" min="0" step=".01" oninput="updatePreview()"></div><div><label>কাস্টমারের নাম (ঐচ্ছিক)</label><input id="customer" placeholder="কাস্টমারের নাম"></div><div><label>কাস্টমারের ফোন নম্বর (ঐচ্ছিক)</label><input id="customerPhone" type="tel" inputmode="tel" placeholder="01XXXXXXXXX"></div>
 <div><label>জমা টাকা (৳)</label><input id="sellPaid" type="number" min="0" value="0"></div><div><label>বিক্রেতা</label><input id="seller" placeholder="আপনার / সহকারীর নাম"></div>
 </div><div id="sellPreview" class="note" style="margin-top:10px;font-size:14px"></div><div id="cartBox"></div><div class="actions"><button onclick="addToCart()">➕ বিলে আরেকটি পার্টস যোগ করুন</button><button class="gold" onclick="sale()">বিক্রয় নিশ্চিত করুন</button></div><p class="note">একাধিক পার্টস এক বিলে বিক্রি করতে প্রতিটি পার্টস "বিলে যোগ করুন" দিয়ে তালিকায় তুলুন; তালিকা থাকলে "নিশ্চিত করুন" শুধু তালিকার পার্টসগুলো বিক্রি করবে (ফর্মে থাকা লাইন যোগ না করলে ধরা হবে না) এবং জমা টাকা পুরো বিলের জন্য ধরা হবে। বিক্রয় নিশ্চিত করলে স্টক কমবে। জমা টাকার চেয়ে বিল বেশি হলে বাকি হিসাব তৈরি হবে। স্টক না থাকলে বিক্রি হবে না।</p></div>
@@ -317,17 +317,36 @@ function persistUndo(){
   while(undoStack.length){try{localStorage.setItem(UNDO_KEY,JSON.stringify(undoStack));return}catch(_){undoStack.shift()}}
   try{localStorage.removeItem(UNDO_KEY)}catch(_){}
 }
-function pushUndo(label,ph){undoStack.push({ts:Date.now(),label,ph:ph||undefined,snap:JSON.stringify(core(db))});if(undoStack.length>15)undoStack.shift();persistUndo()}
+function pushUndo(label,ph){redoStack=[];undoStack.push({ts:Date.now(),label,ph:ph||undefined,snap:JSON.stringify(core(db))});if(undoStack.length>15)undoStack.shift();persistUndo()}
+let redoStack=[];
+const snapPh=ph=>{const o={};Object.keys(ph||{}).forEach(k=>o[k]=photos[k]||null);return o};
+const applyPh=ph=>{for(const k of Object.keys(ph)){if(ph[k])photos[k]=ph[k];else delete photos[k]}persistPhotos()};
+function restoreSnap(snap){
+  const s=JSON.parse(snap);const d=clone(db);d.parts=s.parts;d.purchases=s.purchases;d.sales=s.sales;d.cash=s.cash||[];
+  const err=recompute(d);if(err)throw new Error(err);
+  db.parts=d.parts;db.purchases=d.purchases;db.sales=d.sales;db.cash=d.cash;
+}
 function undo(){
   const u=undoStack.pop();if(!u)return;
   try{
-    const s=JSON.parse(u.snap);const d=clone(db);d.parts=s.parts;d.purchases=s.purchases;d.sales=s.sales;d.cash=s.cash||[];
-    const err=recompute(d);if(err)throw new Error(err);
-    db.parts=d.parts;db.purchases=d.purchases;db.sales=d.sales;db.cash=d.cash;
-    if(u.ph){for(const k of Object.keys(u.ph)){if(u.ph[k])photos[k]=u.ph[k];else delete photos[k]}persistPhotos()}
+    const cur={ts:Date.now(),label:u.label,ph:u.ph?snapPh(u.ph):undefined,snap:JSON.stringify(core(db))};
+    restoreSnap(u.snap);
+    if(u.ph)applyPh(u.ph);
+    redoStack.push(cur);if(redoStack.length>15)redoStack.shift();
     addHistory('system','undo','Undo: '+u.label,['আগের অবস্থায় ফিরে যাওয়া হয়েছে']);
     persistUndo();save();toast('↩ ফিরিয়ে নেওয়া হয়েছে: '+u.label,false);
-  }catch(e){alert('Undo করা যায়নি: '+e.message)}
+  }catch(e){undoStack.push(u);alert('Undo করা যায়নি: '+e.message)}
+}
+function redo(){
+  const r=redoStack.pop();if(!r)return;
+  try{
+    const cur={ts:Date.now(),label:r.label,ph:r.ph?snapPh(r.ph):undefined,snap:JSON.stringify(core(db))};
+    restoreSnap(r.snap);
+    if(r.ph)applyPh(r.ph);
+    undoStack.push(cur);if(undoStack.length>15)undoStack.shift();
+    addHistory('system','redo','Redo: '+r.label,['আবার প্রয়োগ করা হয়েছে']);
+    persistUndo();save();toast('↪ আবার করা হয়েছে: '+r.label,false);
+  }catch(e){redoStack.push(r);alert('Redo করা যায়নি: '+e.message)}
 }
 function addHistory(type,action,text,details){
   db.history.unshift({id:uid(),ts:Date.now(),user:actor(),type,action,text,details:details||[]});
@@ -646,7 +665,9 @@ const ACTIONS={labelPart,payflow:payFlow,receipt:receipt,cartDel:i=>{cart.splice
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const f=ACTIONS[b.dataset.act];if(f)f(b.dataset.id)});
 const btns=(a,id)=>`<td class="act"><button class="sm" data-act="edit${a}" data-id="${esc(id)}">✏️ এডিট</button><button class="sm danger" data-act="del${a}" data-id="${esc(id)}">🗑 ডিলিট</button></td>`;
 const byTs=(a,b)=>b.ts-a.ts;
-function addOptions(){['buyPart','sellPart'].forEach(id=>{let el=$(id),old=el.value;el.innerHTML=db.parts.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} (${stock(p)}টি)</option>`).join('');if(old)el.value=old})}
+function addOptions(){['buyPart','sellPart'].forEach(id=>{let el=$(id),old=el.value;const q=(($(id+'S')||{}).value||'').trim().toLowerCase();const list=db.parts.filter(p=>!q||(p.name+' '+(p.code||'')).toLowerCase().includes(q));el.innerHTML=list.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} (${stock(p)}টি)</option>`).join('');if(old&&list.some(p=>p.id===old))el.value=old})}
+function partSearch(id){const s=$(id),before=s.value;addOptions();if(id==='sellPart'&&s.value!==before)suggestPrice()}
+function partPick(id){const s=$(id);if(s.options.length){s.selectedIndex=0;s.dispatchEvent(new Event('change'))}}
 function renderParts(){let s=(partSearch.value||'').toLowerCase();const cf=partCatFilter.value;partsBody.innerHTML=db.parts.filter(p=>(p.name+' '+p.code).toLowerCase().includes(s)&&(!cf||p.cat===cf)).map(p=>`<tr><td>${photos[p.id]?`<img class="thumb" src="${photos[p.id]}" alt="" data-act="viewPhoto" data-id="${esc(p.id)}">`:'<span class="thumbph">📦</span>'}</td><td>${esc(p.name)}</td><td>${esc(p.code)}</td><td>${esc(p.cat)}</td><td>${stock(p)}</td><td>${money(avgCost(p))}</td><td>${p.price?money(p.price):'—'}${p.smin||p.smax?'<div class="note">সীমা: '+rangeText(p)+'</div>':''}</td><td>${p.price&&avgCost(p)>0?pct(p.price-avgCost(p),avgCost(p)):'—'}</td>${btns('Part',p.id).replace('</td>','<button class="sm" data-act="labelPart" data-id="'+esc(p.id)+'">🏷 লেবেল</button></td>')}</tr>`).join('')||'<tr><td colspan="9" class="empty">কোনো পার্টস পাওয়া যায়নি</td></tr>'}
 function renderLog(){
   const t=logType.value,s=(logSearch.value||'').toLowerCase();
@@ -673,7 +694,7 @@ function render(){
   sellMore.style.display=sl.length>sellLimit?'':'none';
   let sums={};db.sales.forEach(x=>{let a=sums[x.pid]||(sums[x.pid]={name:pname(x),qty:0,sale:0,cost:0,profit:0});a.qty+=x.qty;a.sale+=x.total;a.cost+=x.cost;a.profit+=x.profit});
   profitBody.innerHTML=Object.values(sums).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.sale)}</td><td>${money(x.cost)}</td><td class="${x.profit>=0?'green':'red'}">${money(x.profit)}</td><td class="${x.profit>=0?'green':'red'}">${pct(x.profit,x.cost)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">বিক্রয় হলে এখানে লাভের হিসাব আসবে</td></tr>';
-  renderMoney();renderCart();updatePreview();renderViz();renderHomeRep();renderHStock();undoBtn.disabled=!undoStack.length;undoBtn.textContent='↩ Undo'+(undoStack.length?' ('+undoStack.length+')':'');
+  renderMoney();renderCart();updatePreview();renderViz();renderHomeRep();renderHStock();undoBtn.disabled=!undoStack.length;undoBtn.textContent='↩ Undo'+(undoStack.length?' ('+undoStack.length+')':'');redoBtn.disabled=!redoStack.length;redoBtn.textContent='↪ Redo'+(redoStack.length?' ('+redoStack.length+')':'');
   if(document.activeElement!==userName)userName.value=db.settings.user||'';
   const hasData=db.parts.length>0,lb=db.settings.lastBackup,days=lb?(Date.now()-lb)/864e5:null;
   backupNote.innerHTML=(driveDue()?`<div class="warn">☁ আজকের Google Drive ব্যাকআপ বাকি। <button class="sm gold" onclick="driveUpload(true)">এখনই পাঠান</button></div>`:'')+(loadWarn?`<div class="warn">⚠ ${esc(loadWarn)}</div>`:'')+(hasData&&(lb===null||days>7)?`<div class="warn">💾 ${lb===null?'এখনো কোনো ব্যাকআপ নেওয়া হয়নি।':'সর্বশেষ ব্যাকআপ '+Math.floor(days)+' দিন আগে।'} <a href="#" onclick="go('backupTab');return false">এখনই ব্যাকআপ নিন</a></div>`:'');
