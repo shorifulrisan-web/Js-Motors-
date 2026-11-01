@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#101d35">
+<link rel="manifest" href="manifest.json"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="JS Motors"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>JS Motors – Business Manager</title>
+<style>
+:root{--navy:#101d35;--gold:#d6aa45;--bg:#f3f5f8;--ink:#172033;--muted:#6c7688;--line:#e4e8ef;--green:#16845b;--red:#c44848}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,"Noto Sans Bengali",sans-serif;color:var(--ink);padding-bottom:80px}
+header{background:linear-gradient(120deg,#101d35,#1b3155);color:white;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-size:22px;font-weight:800;letter-spacing:.3px}.brand small{display:block;font-size:12px;color:#d9c18a;font-weight:500;letter-spacing:1px}
+.hright{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.hright input{width:150px;padding:8px 10px;border-radius:9px;border:0;background:#ffffff1f;color:white}.hright input::placeholder{color:#c8d0e0}
+.hright button{padding:8px 11px;background:var(--gold);color:#201a0b}.hright button:disabled{opacity:.4;cursor:not-allowed}
+.wrap{max-width:1100px;margin:auto;padding:18px}.tabs{display:flex;gap:8px;overflow:auto;padding:3px 0 14px}
+button,.tab{border:0;border-radius:10px;padding:10px 14px;background:#e7ebf2;color:#243149;font-weight:650;cursor:pointer;font:inherit;font-weight:650}
+button.primary{background:var(--navy);color:white}button.gold{background:var(--gold);color:#201a0b}button.danger{background:#fae8e8;color:#a12e2e}
+button.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.tab.active{background:var(--navy);color:white}.panel{display:none}.panel.active{display:block}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.card,.box{background:white;border:1px solid var(--line);border-radius:14px;padding:15px;box-shadow:0 2px 8px #17203308}
+.kicker{color:var(--muted);font-size:13px}.value{font-size:25px;font-weight:800;margin-top:5px}.green{color:var(--green)}.red{color:var(--red)}
+h2{font-size:19px;margin:4px 0 14px}h3{font-size:15px;margin:0 0 12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+label{display:block;font-size:13px;color:var(--muted);margin:8px 0 5px}
+input,select{width:100%;padding:11px;border:1px solid #d8dee8;border-radius:9px;background:white;font:inherit;min-width:0}
+.row{display:flex;gap:9px;align-items:end;flex-wrap:wrap}.row>*{flex:1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:620px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{color:var(--muted);font-weight:650;background:#fafbfd}
+td.act{white-space:nowrap}td.act button{margin-right:4px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:12px}
+.note{font-size:12px;color:var(--muted);line-height:1.6}.pill{font-size:11px;padding:3px 7px;border-radius:20px;background:#edf1f6}
+.pill.add{background:#dff3ea;color:#116546}.pill.edit{background:#fbf0d3;color:#7a5a0b}.pill.delete{background:#fae8e8;color:#a12e2e}.pill.undo,.pill.restore,.pill.backup,.pill.system{background:#e3e9f5;color:#2b3b63}
+.empty{text-align:center;color:var(--muted);padding:25px}
+.warn{background:#fff6dd;border:1px solid #ecd48b;color:#6b5210;border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:14px;line-height:1.6}
+.more{display:block;margin:12px auto 0}
+.dl{margin:4px 0 0;padding:0;list-style:none;font-size:12px;color:var(--muted);line-height:1.6}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
+.modal{display:none;position:fixed;inset:0;background:#0009;z-index:50;align-items:flex-end;justify-content:center}
+.modal.show{display:flex}
+.sheet{background:white;width:100%;max-width:560px;border-radius:16px 16px 0 0;padding:18px;max-height:92vh;overflow:auto}
+#toast{display:none;position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:40;background:var(--navy);color:white;padding:10px 12px 10px 16px;border-radius:12px;align-items:center;gap:12px;max-width:94vw;box-shadow:0 6px 20px #0005;font-size:14px}
+#toast.show{display:flex}#toast button{padding:7px 11px;white-space:nowrap}
+@media(min-width:700px){.modal{align-items:center}.sheet{border-radius:16px}}
+@media(max-width:600px){.wrap{padding:12px}.value{font-size:21px}.tab{white-space:nowrap;padding:9px 11px}header{padding:15px}.hright input{width:120px}}
+</style></head>
+<body>
+<header><div class="brand">JS MOTORS <small>PARTS & BUSINESS MANAGER</small></div>
+<div class="hright"><button id="installBtn" style="display:none" onclick="installApp()">📲 ইনস্টল</button><input id="userName" placeholder="আপনার নাম (ইতিহাসের জন্য)" onchange="setUser(this.value)"><button id="undoBtn" onclick="undo()" disabled>↩ Undo</button><div class="pill">অফলাইন · V2</div></div></header>
+<div class="wrap">
+<nav class="tabs">
+<button class="tab active" data-tab="home">ড্যাশবোর্ড</button><button class="tab" data-tab="parts">পার্টস</button><button class="tab" data-tab="buy">ক্রয়</button><button class="tab" data-tab="sell">বিক্রয়</button><button class="tab" data-tab="reports">লাভ ও রিপোর্ট</button><button class="tab" data-tab="logTab">ইতিহাস</button><button class="tab" data-tab="backupTab">ব্যাকআপ</button>
+</nav>
+<section id="home" class="panel active">
+<div id="backupNote"></div>
+<div class="cards">
+<div class="card"><div class="kicker">পার্টসের ধরন</div><div class="value" id="kParts">0</div></div>
+<div class="card"><div class="kicker">মোট স্টক (ইউনিট)</div><div class="value" id="kStock">0</div></div>
+<div class="card"><div class="kicker">মোট বিক্রয়</div><div class="value" id="kSales">৳0</div></div>
+<div class="card"><div class="kicker">আনুমানিক মোট লাভ</div><div class="value green" id="kProfit">৳0</div></div>
+</div>
+<div class="box"><h2>দ্রুত কাজ</h2><div class="actions"><button class="primary" onclick="go('parts')">+ পার্টস যোগ</button><button class="primary" onclick="go('buy')">+ মাল ক্রয়</button><button class="gold" onclick="go('sell')">+ বিক্রয় করুন</button></div><p class="note">স্টক বাড়াতে ক্রয় এন্ট্রি করুন। বিক্রয় এন্ট্রি করলে স্টক কমবে এবং বিক্রিত পণ্যের ক্রয়মূল্য ধরে লাভ হিসাব হবে। ভুল হলে এডিট/ডিলিট করুন বা উপরের ↩ Undo চাপুন।</p></div>
+<div class="box" style="margin-top:14px"><h2>কম স্টক (৫ বা তার কম)</h2><div id="lowStock" class="empty">এখনো কোনো পার্টস নেই।</div></div>
+</section>
+<section id="parts" class="panel">
+<div class="box"><h2>নতুন পার্টস যোগ / পার্টস তালিকা</h2><div class="grid">
+<div><label>পার্টসের নাম *</label><input id="pName" placeholder="যেমন: Oil Filter"></div>
+<div><label>কোড / পার্ট নম্বর</label><input id="pCode" placeholder="যেমন: OF-01"></div>
+<div><label>ক্যাটাগরি</label><select id="pCat"><option>ভেকু</option><option>ট্রাক্টর</option><option>ট্রাক / বাস</option><option>অন্যান্য</option></select></div>
+<div><label>সর্বনিম্ন স্টক সতর্কতা</label><input id="pMin" type="number" min="0" value="5"></div>
+</div><div class="actions"><button class="primary" onclick="addPart()">পার্টস সংরক্ষণ</button></div></div>
+<div class="box" style="margin-top:14px"><div class="row"><h2 style="flex:2">পার্টস তালিকা</h2><input id="partSearch" placeholder="নাম বা কোড দিয়ে খুঁজুন" oninput="renderParts()"></div><div class="tablewrap"><table><thead><tr><th>নাম</th><th>কোড</th><th>ক্যাটাগরি</th><th>স্টক</th><th>গড় ক্রয়মূল্য</th><th>বিক্রয়মূল্য</th><th>অ্যাকশন</th></tr></thead><tbody id="partsBody"></tbody></table></div></div>
+</section>
+<section id="buy" class="panel"><div class="box"><h2>মাল ক্রয় এন্ট্রি</h2><div class="grid">
+<div><label>পার্টস</label><select id="buyPart"></select></div><div><label>পরিমাণ</label><input id="buyQty" type="number" min="1" value="1"></div>
+<div><label>প্রতি পিস ক্রয়মূল্য (৳)</label><input id="buyCost" type="number" min="0" step=".01"></div><div><label>সাপ্লায়ার (ঐচ্ছিক)</label><input id="supplier" placeholder="সাপ্লায়ারের নাম"></div>
+</div><div class="actions"><button class="primary" onclick="purchase()">ক্রয় সংরক্ষণ ও স্টক বাড়ান</button></div><p class="note">প্রতিটি ক্রয় আলাদা ব্যাচ হিসেবে সংরক্ষিত হবে। বিক্রির সময় আগে কেনা স্টক আগে কমবে (FIFO পদ্ধতি)।</p></div>
+<div class="box" style="margin-top:14px"><div class="row"><h2 style="flex:2">সাম্প্রতিক ক্রয়</h2><input id="buySearch" placeholder="পার্টস বা সাপ্লায়ার খুঁজুন" oninput="buyLimit=30;render()"></div><div class="tablewrap"><table><thead><tr><th>তারিখ</th><th>পার্টস</th><th>পরিমাণ</th><th>একক ক্রয়মূল্য</th><th>মোট</th><th>সাপ্লায়ার</th><th>অ্যাকশন</th></tr></thead><tbody id="buyBody"></tbody></table></div><button id="buyMore" class="more" data-act="moreBuy">আরও দেখান</button></div>
+</section>
+<section id="sell" class="panel"><div class="box"><h2>নতুন বিক্রয়</h2><div class="grid">
+<div><label>পার্টস</label><select id="sellPart" onchange="suggestPrice()"></select></div><div><label>পরিমাণ</label><input id="sellQty" type="number" min="1" value="1"></div>
+<div><label>প্রতি পিস বিক্রয়মূল্য (৳)</label><input id="sellPrice" type="number" min="0" step=".01"></div><div><label>কাস্টমারের নাম (ঐচ্ছিক)</label><input id="customer" placeholder="কাস্টমারের নাম"></div>
+<div><label>জমা টাকা (৳)</label><input id="sellPaid" type="number" min="0" value="0"></div><div><label>বিক্রেতা</label><input id="seller" placeholder="আপনার / সহকারীর নাম"></div>
+</div><div class="actions"><button class="gold" onclick="sale()">বিক্রয় নিশ্চিত করুন</button></div><p class="note">বিক্রয় নিশ্চিত করলে স্টক কমবে। জমা টাকার চেয়ে বিল বেশি হলে বাকি হিসাব তৈরি হবে। স্টক না থাকলে বিক্রি হবে না।</p></div>
+<div class="box" style="margin-top:14px"><div class="row"><h2 style="flex:2">সাম্প্রতিক বিক্রয়</h2><input id="sellSearch" placeholder="পার্টস, কাস্টমার বা বিক্রেতা খুঁজুন" oninput="sellLimit=30;render()"></div><div class="tablewrap"><table><thead><tr><th>তারিখ</th><th>পার্টস</th><th>পরিমাণ</th><th>মোট বিল</th><th>আদায়</th><th>বাকি</th><th>লাভ</th><th>বিক্রেতা</th><th>অ্যাকশন</th></tr></thead><tbody id="sellBody"></tbody></table></div><button id="sellMore" class="more" data-act="moreSell">আরও দেখান</button></div>
+</section>
+<section id="reports" class="panel"><div class="cards">
+<div class="card"><div class="kicker">মোট ক্রয়</div><div class="value" id="rBuy">৳0</div></div><div class="card"><div class="kicker">মোট বিক্রয়</div><div class="value" id="rSale">৳0</div></div><div class="card"><div class="kicker">বিক্রিত পণ্যের ক্রয়মূল্য</div><div class="value" id="rCogs">৳0</div></div><div class="card"><div class="kicker">মোট গ্রস লাভ</div><div class="value green" id="rProfit">৳0</div></div>
+</div><div class="box"><h2>লাভের হিসাব</h2><p class="note">গ্রস লাভ = বিক্রয়মূল্য − বিক্রিত পণ্যের ক্রয়মূল্য (FIFO)। দোকান ভাড়া, বেতন, পরিবহন, বিদ্যুৎ ও অন্যান্য খরচ এখানে বাদ দেওয়া হয়নি। কোনো এন্ট্রি এডিট/ডিলিট করলে স্টক ও লাভ স্বয়ংক্রিয়ভাবে নতুন করে হিসাব হয়।</p><div class="tablewrap"><table><thead><tr><th>পার্টস</th><th>বিক্রিত পরিমাণ</th><th>বিক্রয়</th><th>বিক্রিত পণ্যের ক্রয়মূল্য</th><th>গ্রস লাভ</th></tr></thead><tbody id="profitBody"></tbody></table></div></div>
+</section>
+<section id="logTab" class="panel"><div class="box"><h2>কার্যকলাপের ইতিহাস</h2><p class="note">কে, কখন, কী পরিবর্তন করেছে তার তালিকা। ব্যবহারকারীর নাম উপরের ঘর থেকে নেওয়া হয় (এই ডিভাইসে লগইন নেই)।</p>
+<div class="row"><select id="logType" onchange="logLimit=50;renderLog()"><option value="all">সব ধরন</option><option value="part">পার্টস</option><option value="buy">ক্রয়</option><option value="sale">বিক্রয়</option><option value="system">সিস্টেম / ব্যাকআপ</option></select><input id="logSearch" placeholder="খুঁজুন…" oninput="logLimit=50;renderLog()"></div>
+<div class="tablewrap"><table><thead><tr><th>সময়</th><th>কে</th><th>কাজ</th><th>বিবরণ</th></tr></thead><tbody id="logBody"></tbody></table></div><button id="logMore" class="more" data-act="moreLog">আরও দেখান</button></div></section>
+<section id="backupTab" class="panel"><div class="box"><h2>ডেটা ব্যাকআপ ও পুনরুদ্ধার</h2><p>এই সংস্করণে তথ্য এই ব্রাউজারের এই ডিভাইসেই থাকে। নিয়মিত ব্যাকআপ নিন এবং "Gmail / Drive-এ পাঠান" দিয়ে নিজের Gmail বা Google Drive-এ রাখুন, যাতে ফোন হারালেও ডেটা থাকে।</p><div id="backupInfo" class="note"></div><div class="actions"><button class="primary" onclick="backup()">ব্যাকআপ ডাউনলোড (JSON)</button><button class="gold" onclick="shareBackup()">📤 Gmail / Drive-এ পাঠান</button><label class="gold" style="display:inline-block;padding:10px 14px;border-radius:10px;color:#201a0b;cursor:pointer;margin:0;font-size:inherit">ব্যাকআপ ফিরিয়ে আনুন <input type="file" accept=".json,application/json" onchange="restore(event)" style="display:none"></label></div>
+<p class="note">ব্যাকআপে পার্টস, ক্রয়, বিক্রয় ও কার্যকলাপের ইতিহাস সবই থাকে। পুরনো (V1) ব্যাকআপ ফাইলও ফিরিয়ে আনা যায়। ফিরিয়ে আনার পর ভুল মনে হলে ↩ Undo করা যাবে।</p></div>
+<div class="box" style="margin-top:14px"><h3>অটো-সেভ কপি (প্রতিদিন প্রথমবার খোলার সময় সর্বশেষ ৩টি)</h3><div id="autoList"></div></div>
+<div class="box" style="margin-top:14px"><h3>☁ Google Drive অটো-ব্যাকআপ (দিনে একবার)</h3>
+<div id="driveStatus" class="note"></div>
+<label>Google Client ID (একবার বসান)</label><input id="dClientId" placeholder="xxxxxxxx.apps.googleusercontent.com" onchange="saveDrive()">
+<label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input id="dAutoChk" type="checkbox" style="width:auto" onchange="saveDrive()"> অ্যাপ খুললে প্রতিদিন নিজে থেকে ব্যাকআপ পাঠান</label>
+<div class="actions"><button class="primary" onclick="driveUpload(true)">☁ এখনই Drive-এ ব্যাকআপ</button><button onclick="driveShow()">Drive থেকে ফিরিয়ে আনুন</button></div>
+<div id="driveFiles"></div>
+<p class="note">ব্যাকআপ আপনার নিজের Google Drive-এর "JS Motors Backup" ফোল্ডারে জমা হয় (সর্বশেষ ৭টি রাখা হয়)। অ্যাপ বন্ধ থাকলে ব্যাকআপ যায় না; খুললে স্বয়ংক্রিয়ভাবে চেষ্টা করে, না হলে ড্যাশবোর্ডে "এখনই পাঠান" বোতাম আসে।</p></div>
+<div class="box" style="margin-top:14px"><button class="danger" onclick="clearData()">সব ডেটা মুছে ফেলুন</button><p class="note">সতর্কতা: ব্রাউজারের ডেটা মুছে গেলে ব্যাকআপ ছাড়া তথ্য ফেরত পাওয়া নাও যেতে পারে। একাধিক ফোনে একই ডেটা শেয়ার এবং আলাদা লগইন চালু করতে অনলাইন ডেটাবেস/সার্ভার প্রয়োজন; এই অফলাইন সংস্করণে তা নেই। "সব ডেটা মুছুন" করলেও ইতিহাস থাকে এবং Undo করা যায়।</p></div></section>
+<footer>JS Motors · আপনার ব্যবসার হিসাব, এক জায়গায়</footer>
+</div>
+
+<div class="modal" id="modal"><div class="sheet"><h2 id="mTitle"></h2><div id="mBody"></div><div class="actions"><button class="primary" id="mSave">সংরক্ষণ</button><button onclick="closeModal()">বাতিল</button></div></div></div>
+<div id="toast"><span id="toastMsg"></span><button id="toastUndo" class="gold" onclick="undo()">↩ Undo</button></div>
+
+<script>
+/* ===================== Storage keys & helpers ===================== */
+const KEY='jsmotors_v2',OLD_KEY='jsmotors_v1',MIRROR='jsmotors_v2_mirror',UNDO_KEY='jsmotors_v2_undo',AUTO_KEY='jsmotors_v2_auto';
+const $=id=>document.getElementById(id);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+const money=n=>'৳'+(Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:2});
+const today=()=>new Date().toLocaleString('bn-BD');
+const r2=n=>{n=Math.round((+n||0)*100)/100;return n===0?0:n};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const CATS=['ভেকু','ট্রাক্টর','ট্রাক / বাস','অন্যান্য'];
+let lastTs=0;const nextTs=()=>lastTs=Math.max(Date.now(),lastTs+1);
+let buyLimit=30,sellLimit=30,logLimit=50,loadWarn='',undoStack=[],modalSave=null,toastTimer=null;
+const emptyDB=()=>({v:2,parts:[],purchases:[],sales:[],history:[],settings:{user:'',lastBackup:null}});
+const rd=k=>{try{const s=localStorage.getItem(k);return s?JSON.parse(s):null}catch(_){return null}};
+
+/* ===================== FIFO engine =====================
+   Transactions (purchases + sales) are the single source of truth.
+   Batches, sale cost, profit and stock are ALWAYS recomputed by replaying
+   all transactions in chronological order using FIFO. Returns an error
+   message (string) if the result would be invalid, otherwise null. */
+function evDesc(x,pm){return (pm.get(x.pid)?.name||x.name||'?')+' ('+(x.date||new Date(x.ts).toLocaleString('bn-BD'))+')'}
+function recompute(d){
+  const pm=new Map(d.parts.map(p=>[p.id,p]));
+  d.parts.forEach(p=>p.batches=[]);
+  const ev=[];
+  d.purchases.forEach((x,i)=>ev.push({k:0,x,i}));
+  d.sales.forEach((x,i)=>ev.push({k:1,x,i}));
+  ev.sort((a,b)=>a.x.ts-b.x.ts||a.k-b.k||b.i-a.i);
+  for(const {k,x} of ev){
+    const p=pm.get(x.pid);
+    if(!p)return 'একটি এন্ট্রির পার্টস পাওয়া যায়নি';
+    x.name=p.name;
+    if(!Number.isInteger(x.qty)||x.qty<1)return 'পরিমাণ ১ বা তার বেশি পূর্ণসংখ্যা হতে হবে';
+    if(k===0){
+      if(!Number.isFinite(x.cost)||x.cost<0)return 'ক্রয়মূল্য সঠিক নয়';
+      x.total=r2(x.qty*x.cost);
+      p.batches.push({qty:x.qty,cost:x.cost,date:x.date,supplier:x.supplier||'',ref:x.id});
+    }else{
+      if(!Number.isFinite(x.price)||x.price<0||!Number.isFinite(x.paid)||x.paid<0)return 'বিক্রয়মূল্য/জমা টাকা সঠিক নয়';
+      let need=x.qty,cost=0;
+      for(const b of p.batches){if(!need)break;const t=Math.min(need,b.qty);cost+=t*b.cost;b.qty-=t;need-=t}
+      p.batches=p.batches.filter(b=>b.qty>0);
+      if(need>0)return 'এই পরিবর্তনে "'+evDesc(x,pm)+'" বিক্রয়ের (পরিমাণ '+x.qty+') জন্য স্টক '+need+'টি কম পড়বে। আগে ওই বিক্রয় এডিট/ডিলিট করুন বা ক্রয়ের পরিমাণ ঠিক রাখুন।';
+      x.total=r2(x.qty*x.price);x.cost=r2(cost);x.profit=r2(x.total-x.cost);
+      if(x.paid>x.total+1e-9)return '"'+evDesc(x,pm)+'" বিক্রয়ে জমা টাকা মোট বিলের চেয়ে বেশি হয়ে যাচ্ছে';
+      x.due=r2(x.total-x.paid);
+    }
+  }
+  return null;
+}
+const stock=p=>p.batches.reduce((s,b)=>s+b.qty,0);
+const avgCost=p=>{const q=stock(p);return q?p.batches.reduce((s,b)=>s+b.qty*b.cost,0)/q:0};
+const part=id=>db.parts.find(p=>p.id===id);
+const pname=x=>part(x.pid)?.name||x.name||'?';
+const totals=d=>({stock:d.parts.reduce((s,p)=>s+stock(p),0),buy:r2(d.purchases.reduce((s,x)=>s+x.total,0)),sales:r2(d.sales.reduce((s,x)=>s+x.total,0)),profit:r2(d.sales.reduce((s,x)=>s+x.profit,0))});
+
+/* ===================== Migration / import / sanitize ===================== */
+function migrate(old){ // V1 -> V2 (adds ids and chronological order; keeps FIFO costs identical)
+  if(!old||!Array.isArray(old.parts)||!Array.isArray(old.sales)||!Array.isArray(old.purchases))throw new Error('ফাইলটি সঠিক JS Motors ডেটা নয়');
+  const d=emptyDB();
+  d.parts=old.parts.map(p=>({id:String(p.id),name:String(p.name||''),code:p.code||'',cat:p.cat||'অন্যান্য',min:Number.isFinite(+p.min)?+p.min:5,price:+p.price||0,batches:[]}));
+  const ids=new Set(d.parts.map(p=>p.id));
+  const P=old.purchases.filter(x=>ids.has(String(x.pid))).reverse(),S=old.sales.filter(x=>ids.has(String(x.pid))).reverse();
+  let t=Date.now()-(P.length+S.length+20)*1000,pi=0;const avail={};
+  const emitP=x=>{const pid=String(x.pid);d.purchases.unshift({id:uid(),ts:t+=1000,date:x.date||'',pid,qty:x.qty,cost:x.cost,supplier:x.supplier||''});avail[pid]=(avail[pid]||0)+x.qty};
+  S.forEach(s=>{
+    const pid=String(s.pid);
+    while((avail[pid]||0)<s.qty&&pi<P.length)emitP(P[pi++]);
+    if((avail[pid]||0)<s.qty){const m=s.qty-(avail[pid]||0);emitP({pid,qty:m,cost:s.qty?(+s.cost||0)/s.qty:0,date:s.date,supplier:'(পুরনো ডেটা সমন্বয়)'})}
+    d.sales.unshift({id:uid(),ts:t+=1000,date:s.date||'',pid,qty:s.qty,price:s.price,paid:s.paid||0,customer:s.customer||'',seller:s.seller||''});
+    avail[pid]-=s.qty;
+  });
+  while(pi<P.length)emitP(P[pi++]);
+  return d;
+}
+function sanitize(x){
+  if(!x||!Array.isArray(x.parts)||!Array.isArray(x.sales)||!Array.isArray(x.purchases))throw new Error('ফাইলটি সঠিক JS Motors ডেটা নয়');
+  const d=emptyDB(),num=(v,def=0)=>Number.isFinite(+v)&&v!==''&&v!==null?+v:def;
+  const used=new Set(),fix=id=>{id=String(id||'');if(!id||used.has(id))id=uid();used.add(id);return id};
+  d.parts=x.parts.map(p=>{const name=String(p.name||'').trim();if(!name)throw new Error('নামহীন পার্টস পাওয়া গেছে');return{id:String(p.id||uid()),name,code:String(p.code||''),cat:String(p.cat||'অন্যান্য'),min:Math.max(0,Math.floor(num(p.min,5))),price:Math.max(0,num(p.price)),batches:[]}});
+  const ids=new Set(d.parts.map(p=>p.id));if(ids.size!==d.parts.length)throw new Error('পার্টস আইডি ডুপ্লিকেট');
+  const cp=(t,f)=>{const pid=String(t.pid);if(!ids.has(pid))throw new Error('এন্ট্রির পার্টস পাওয়া যায়নি');const ts=num(t.ts,Date.now());return{id:fix(t.id),ts,date:String(t.date||new Date(ts).toLocaleString('bn-BD')),pid,qty:Math.floor(num(t.qty,0)),...f}};
+  d.purchases=x.purchases.map(t=>cp(t,{cost:num(t.cost,NaN),supplier:String(t.supplier||'')}));
+  d.sales=x.sales.map(t=>cp(t,{price:num(t.price,NaN),paid:num(t.paid,0),customer:String(t.customer||''),seller:String(t.seller||'')}));
+  const hs=new Set();
+  d.history=(Array.isArray(x.history)?x.history:[]).filter(h=>h&&h.ts&&h.text&&!hs.has(h.id)&&hs.add(h.id)).slice(0,3000).map(h=>({id:String(h.id||uid()),ts:+h.ts,user:String(h.user||''),type:String(h.type||'system'),action:String(h.action||'system'),text:String(h.text),details:Array.isArray(h.details)?h.details.map(String):[]}));
+  d.settings={user:String(x.settings?.user||''),lastBackup:x.settings?.lastBackup||null};
+  const err=recompute(d);if(err)throw new Error(err);
+  return d;
+}
+const build=x=>sanitize(x&&x.v>=2?x:migrate(x));
+
+/* ===================== Load & persist ===================== */
+let db;
+function loadDB(){
+  let raw=null,old=null;
+  try{raw=localStorage.getItem(KEY);old=localStorage.getItem(OLD_KEY)}catch(_){loadWarn='ব্রাউজার স্টোরেজ ব্যবহার করা যাচ্ছে না; ডেটা সংরক্ষণ হবে না।'}
+  if(raw){
+    try{return build(JSON.parse(raw))}catch(e){
+      try{localStorage.setItem('jsmotors_v2_corrupt_copy',raw)}catch(_){}
+      loadWarn='মূল ডেটা পড়তে সমস্যা হয়েছে ('+e.message+'); ';
+      try{const m=localStorage.getItem(MIRROR);if(m){const d=build(JSON.parse(m));loadWarn+='অটো-কপি থেকে ডেটা ফিরিয়ে আনা হয়েছে।';return d}}catch(_){}
+      loadWarn+='অটো-কপিও পড়া যায়নি। অটো-সেভ কপি বা ব্যাকআপ ফাইল থেকে ফিরিয়ে আনুন (নষ্ট ডেটার কপি আলাদা রাখা আছে)।';
+      return emptyDB();
+    }
+  }
+  if(old){
+    try{const d=build(JSON.parse(old));
+      d.history.unshift({id:uid(),ts:Date.now(),user:'সিস্টেম',type:'system',action:'system',text:'V1 ডেটা V2 তে আপগ্রেড করা হয়েছে',details:['পার্টস '+d.parts.length+'টি, ক্রয় '+d.purchases.length+'টি, বিক্রয় '+d.sales.length+'টি। পুরনো V1 ডেটা আলাদা কপি হিসেবে অক্ষত আছে।']});
+      return d}catch(e){loadWarn='V1 ডেটা আপগ্রেড করা যায়নি ('+e.message+'); পুরনো ডেটা মোছা হয়নি।'}
+  }
+  return emptyDB();
+}
+function persist(){
+  const s=JSON.stringify(db);
+  const tryWrite=()=>{localStorage.setItem(KEY,s)};
+  try{tryWrite()}catch(e){
+    try{[AUTO_KEY,UNDO_KEY,MIRROR].forEach(k=>localStorage.removeItem(k));undoStack=[];tryWrite()}
+    catch(e2){alert('সতর্কতা: ডেটা সংরক্ষণ করা যায়নি (স্টোরেজ ভর্তি হতে পারে)। এখনই ব্যাকআপ ডাউনলোড করুন!');return false}
+  }
+  try{localStorage.setItem(MIRROR,s)}catch(_){}
+  return true;
+}
+function save(){persist();render()}
+function setUser(v){db.settings.user=v.trim();persist()}
+const actor=()=>(db.settings.user||'').trim()||'নাম দেওয়া হয়নি';
+
+/* ===================== Undo ===================== */
+const core=d=>({parts:d.parts.map(({batches,...p})=>p),purchases:d.purchases,sales:d.sales});
+function persistUndo(){
+  while(undoStack.length){try{localStorage.setItem(UNDO_KEY,JSON.stringify(undoStack));return}catch(_){undoStack.shift()}}
+  try{localStorage.removeItem(UNDO_KEY)}catch(_){}
+}
+function pushUndo(label){undoStack.push({ts:Date.now(),label,snap:JSON.stringify(core(db))});if(undoStack.length>15)undoStack.shift();persistUndo()}
+function undo(){
+  const u=undoStack.pop();if(!u)return;
+  try{
+    const s=JSON.parse(u.snap);const d=clone(db);d.parts=s.parts;d.purchases=s.purchases;d.sales=s.sales;
+    const err=recompute(d);if(err)throw new Error(err);
+    db.parts=d.parts;db.purchases=d.purchases;db.sales=d.sales;
+    addHistory('system','undo','Undo: '+u.label,['আগের অবস্থায় ফিরে যাওয়া হয়েছে']);
+    persistUndo();save();toast('↩ ফিরিয়ে নেওয়া হয়েছে: '+u.label,false);
+  }catch(e){alert('Undo করা যায়নি: '+e.message)}
+}
+function addHistory(type,action,text,details){
+  db.history.unshift({id:uid(),ts:Date.now(),user:actor(),type,action,text,details:details||[]});
+  if(db.history.length>3000)db.history.length=3000;
+}
+
+/* ===================== Safe change pipeline =====================
+   Every add/edit/delete goes through apply(): change a COPY, recompute FIFO,
+   reject if stock/profit would become invalid, otherwise save an Undo point,
+   commit, and write the activity log. */
+function dryRun(fn){
+  const d=clone(core(db));d.parts.forEach(p=>p.batches=[]);
+  const before=totals(db);
+  try{fn(d)}catch(e){return{err:e.message||String(e)}}
+  const err=recompute(d);return err?{err}:{before,after:totals(d)};
+}
+function apply(fn){
+  const d=clone(core(db));d.parts.forEach(p=>p.batches=[]);
+  let info;
+  try{info=fn(d)}catch(e){alert(e.message||e);return false}
+  const err=recompute(d);if(err){alert(err);return false}
+  pushUndo(info.text);
+  db.parts=d.parts;db.purchases=d.purchases;db.sales=d.sales;
+  addHistory(info.type,info.action,info.text,info.details);
+  save();toast(info.toast||info.text,true);return true;
+}
+function toast(msg,canUndo){
+  $('toastMsg').textContent=msg;$('toastUndo').style.display=canUndo&&undoStack.length?'':'none';
+  $('toast').classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').classList.remove('show'),canUndo?9000:4000);
+}
+const diffLines=a=>a.filter(([l,x,y])=>String(x??'')!==String(y??'')).map(([l,x,y])=>l+': '+(x===''||x==null?'—':x)+' → '+(y===''||y==null?'—':y));
+function deleteFlow(heading,desc,fn){
+  const r=dryRun(fn);if(r.err){alert(r.err);return}
+  const imp=[['মোট স্টক','stock',v=>v],['মোট ক্রয়','buy',money],['মোট বিক্রয়','sales',money],['মোট লাভ','profit',money]].filter(([,k])=>r.before[k]!==r.after[k]).map(([l,k,f])=>l+': '+f(r.before[k])+' → '+f(r.after[k]));
+  if(confirm(heading+'\n'+desc.join('\n')+'\n\nপ্রভাব (স্টক ও লাভ স্বয়ংক্রিয়ভাবে নতুন করে হিসাব হবে):\n'+(imp.join('\n')||'কোনো পরিবর্তন নেই')+'\n\nমুছে ফেলবেন? (ভুল হলে ↩ Undo করা যাবে)'))apply(fn);
+}
+
+/* ===================== Modal ===================== */
+function openModal(title,html,onSave){$('toast').classList.remove('show');$('mTitle').textContent=title;$('mBody').innerHTML=html;modalSave=onSave;$('modal').classList.add('show')}
+function closeModal(){$('modal').classList.remove('show');modalSave=null}
+$('mSave').onclick=()=>{if(modalSave&&modalSave()!==false)closeModal()};
+$('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+const partOpts=sel=>db.parts.map(p=>`<option value="${esc(p.id)}"${p.id===sel?' selected':''}>${esc(p.name)}</option>`).join('');
+const numOrNaN=id=>{const v=$(id).value;return v===''?NaN:+v};
+
+/* ===================== Navigation ===================== */
+function go(id){document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.tab===id));$(id).classList.add('active');render()}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>go(b.dataset.tab));
+
+/* ===================== Parts ===================== */
+function addPart(){
+  let name=pName.value.trim();if(!name)return alert('পার্টসের নাম লিখুন');
+  if(db.parts.some(p=>p.name.toLowerCase()===name.toLowerCase()))return alert('এই পার্টস আগে যোগ করা হয়েছে');
+  const n={id:uid(),name,code:pCode.value.trim(),cat:pCat.value,min:Math.max(0,Math.floor(+pMin.value||0)),price:0,batches:[]};
+  if(apply(d=>{d.parts.push(n);return{type:'part',action:'add',text:'নতুন পার্টস যোগ: '+name,details:['ক্যাটাগরি: '+n.cat+(n.code?', কোড: '+n.code:'')+', সতর্কতা সীমা: '+n.min]}})){pName.value='';pCode.value=''}
+}
+function editPart(id){
+  const p=part(id);if(!p)return;
+  const cats=CATS.includes(p.cat)?CATS:[...CATS,p.cat];
+  openModal('পার্টস সম্পাদনা',`<label>পার্টসের নাম *</label><input id="m_name" value="${esc(p.name)}"><label>কোড / পার্ট নম্বর</label><input id="m_code" value="${esc(p.code)}"><label>ক্যাটাগরি</label><select id="m_cat">${cats.map(c=>`<option${c===p.cat?' selected':''}>${esc(c)}</option>`).join('')}</select><label>সর্বনিম্ন স্টক সতর্কতা</label><input id="m_min" type="number" min="0" value="${p.min}"><label>বিক্রয়মূল্য (৳) — শেষ বিক্রয়ের দাম</label><input id="m_price" type="number" min="0" step=".01" value="${p.price||0}">`,()=>{
+    const name=$('m_name').value.trim();if(!name){alert('পার্টসের নাম লিখুন');return false}
+    if(db.parts.some(x=>x.id!==id&&x.name.toLowerCase()===name.toLowerCase())){alert('এই নামে আরেকটি পার্টস আছে');return false}
+    const n={name,code:$('m_code').value.trim(),cat:$('m_cat').value,min:Math.max(0,Math.floor(+$('m_min').value||0)),price:Math.max(0,+$('m_price').value||0)};
+    const lines=diffLines([['নাম',p.name,n.name],['কোড',p.code,n.code],['ক্যাটাগরি',p.cat,n.cat],['সতর্কতা সীমা',p.min,n.min],['বিক্রয়মূল্য',p.price||0,n.price]]);
+    if(!lines.length)return true;
+    return apply(d=>{Object.assign(d.parts.find(x=>x.id===id),n);return{type:'part',action:'edit',text:'পার্টস সম্পাদনা: '+n.name,details:lines}});
+  });
+}
+function delPart(id){
+  const p=part(id);if(!p)return;
+  const nb=db.purchases.filter(x=>x.pid===id).length,ns=db.sales.filter(x=>x.pid===id).length;
+  const desc=['পার্টস: '+p.name+' (স্টক '+stock(p)+'টি)'];
+  if(nb||ns)desc.push('⚠ এই পার্টসের '+nb+'টি ক্রয় ও '+ns+'টি বিক্রয় এন্ট্রিও মুছে যাবে!');
+  deleteFlow('পার্টস মুছবেন?',desc,d=>{
+    d.parts=d.parts.filter(x=>x.id!==id);d.purchases=d.purchases.filter(x=>x.pid!==id);d.sales=d.sales.filter(x=>x.pid!==id);
+    return{type:'part',action:'delete',text:'পার্টস মোছা হয়েছে: '+p.name,details:['মুছে যাওয়া: ক্রয় '+nb+'টি, বিক্রয় '+ns+'টি, স্টক '+stock(p)+'টি']};
+  });
+}
+
+/* ===================== Purchases ===================== */
+function purchase(){
+  const pid=buyPart.value,q=Math.floor(+buyQty.value),cs=buyCost.value,c=+cs,sup=supplier.value.trim();
+  if(!part(pid))return alert('আগে পার্টস যোগ করুন');
+  if(!(q>=1)||cs===''||!Number.isFinite(c)||c<0)return alert('পরিমাণ ও ক্রয়মূল্য ঠিকভাবে দিন');
+  apply(d=>{const p=d.parts.find(x=>x.id===pid);d.purchases.unshift({id:uid(),ts:nextTs(),date:today(),pid,name:p.name,qty:q,cost:c,total:r2(q*c),supplier:sup});
+    return{type:'buy',action:'add',text:'ক্রয় যোগ: '+p.name+' × '+q,details:['একক মূল্য '+money(c)+', মোট '+money(q*c)+(sup?', সাপ্লায়ার: '+sup:'')],toast:'ক্রয় সংরক্ষণ হয়েছে; স্টক বেড়েছে।'}});
+}
+function editBuy(id){
+  const x=db.purchases.find(t=>t.id===id);if(!x)return;
+  openModal('ক্রয় সম্পাদনা',`<label>পার্টস</label><select id="m_part">${partOpts(x.pid)}</select><label>পরিমাণ</label><input id="m_qty" type="number" min="1" value="${x.qty}"><label>প্রতি পিস ক্রয়মূল্য (৳)</label><input id="m_cost" type="number" min="0" step=".01" value="${x.cost}"><label>সাপ্লায়ার</label><input id="m_sup" value="${esc(x.supplier)}"><p class="note">তারিখ/সময় অপরিবর্তিত থাকবে (FIFO ক্রম ঠিক থাকবে)। সংরক্ষণ করলে স্টক, বিক্রিত পণ্যের ক্রয়মূল্য ও লাভ স্বয়ংক্রিয়ভাবে নতুন করে হিসাব হবে।</p>`,()=>{
+    const pid=$('m_part').value,q=Math.floor(+$('m_qty').value),c=numOrNaN('m_cost'),sup=$('m_sup').value.trim();
+    if(!(q>=1)||!Number.isFinite(c)||c<0){alert('পরিমাণ ও ক্রয়মূল্য ঠিকভাবে দিন');return false}
+    const lines=diffLines([['পার্টস',pname(x),part(pid)?.name],['পরিমাণ',x.qty,q],['একক ক্রয়মূল্য',money(x.cost),money(c)],['সাপ্লায়ার',x.supplier,sup]]);
+    if(!lines.length)return true;
+    return apply(d=>{const t=d.purchases.find(z=>z.id===id);t.pid=pid;t.qty=q;t.cost=c;t.supplier=sup;return{type:'buy',action:'edit',text:'ক্রয় সম্পাদনা: '+pname(x)+' ('+x.date+')',details:lines}});
+  });
+}
+function delBuy(id){
+  const x=db.purchases.find(t=>t.id===id);if(!x)return;
+  deleteFlow('ক্রয় এন্ট্রি মুছবেন?',[pname(x)+' × '+x.qty+' @ '+money(x.cost)+' = '+money(x.total),'তারিখ: '+x.date],d=>{
+    d.purchases=d.purchases.filter(t=>t.id!==id);
+    return{type:'buy',action:'delete',text:'ক্রয় মোছা হয়েছে: '+pname(x)+' × '+x.qty,details:['একক মূল্য '+money(x.cost)+', মোট '+money(x.total)+', তারিখ '+x.date+(x.supplier?', সাপ্লায়ার: '+x.supplier:'')]};
+  });
+}
+
+/* ===================== Sales ===================== */
+function suggestPrice(){let p=part(sellPart.value);if(p)sellPrice.value=p.price||Math.ceil(avgCost(p)*1.2)||''}
+function sale(){
+  const pid=sellPart.value,q=Math.floor(+sellQty.value),ps=sellPrice.value,price=+ps,paid=+sellPaid.value,cust=customer.value.trim(),sel=seller.value.trim()||(db.settings.user||'').trim();
+  const p=part(pid);if(!p)return alert('আগে পার্টস যোগ করুন');
+  if(!(q>=1)||ps===''||!(price>=0)||!(paid>=0))return alert('পরিমাণ ও দাম ঠিকভাবে দিন');
+  if(stock(p)<q)return alert('পর্যাপ্ত স্টক নেই। বর্তমান স্টক: '+stock(p));
+  if(paid>q*price)return alert('জমা টাকা মোট বিলের চেয়ে বেশি হতে পারে না');
+  const sid=uid();
+  if(apply(d=>{const dp=d.parts.find(x=>x.id===pid);dp.price=price;d.sales.unshift({id:sid,ts:nextTs(),date:today(),pid,name:p.name,qty:q,price,paid,customer:cust,seller:sel});
+    return{type:'sale',action:'add',text:'বিক্রয় যোগ: '+p.name+' × '+q,details:['একক দাম '+money(price)+', মোট বিল '+money(q*price)+', জমা '+money(paid)+(cust?', কাস্টমার: '+cust:'')+(sel?', বিক্রেতা: '+sel:'')]}})){
+    const s=db.sales.find(x=>x.id===sid);toast('বিক্রয় সংরক্ষণ হয়েছে। মোট লাভ: '+money(s.profit),true);
+  }
+}
+function editSale(id){
+  const x=db.sales.find(t=>t.id===id);if(!x)return;
+  openModal('বিক্রয় সম্পাদনা',`<label>পার্টস</label><select id="m_part">${partOpts(x.pid)}</select><label>পরিমাণ</label><input id="m_qty" type="number" min="1" value="${x.qty}"><label>প্রতি পিস বিক্রয়মূল্য (৳)</label><input id="m_price" type="number" min="0" step=".01" value="${x.price}"><label>জমা টাকা (৳)</label><input id="m_paid" type="number" min="0" step=".01" value="${x.paid}"><label>কাস্টমার</label><input id="m_cust" value="${esc(x.customer)}"><label>বিক্রেতা</label><input id="m_sel" value="${esc(x.seller)}"><p class="note">সংরক্ষণ করলে স্টক, FIFO ক্রয়মূল্য ও লাভ স্বয়ংক্রিয়ভাবে নতুন করে হিসাব হবে। স্টক কম পড়লে পরিবর্তন গ্রহণ করা হবে না।</p>`,()=>{
+    const pid=$('m_part').value,q=Math.floor(+$('m_qty').value),price=numOrNaN('m_price'),paid=numOrNaN('m_paid'),cust=$('m_cust').value.trim(),sel=$('m_sel').value.trim();
+    if(!(q>=1)||!(price>=0)||!(paid>=0)){alert('পরিমাণ, দাম ও জমা টাকা ঠিকভাবে দিন');return false}
+    if(paid>q*price+1e-9){alert('জমা টাকা মোট বিলের চেয়ে বেশি হতে পারে না');return false}
+    const lines=diffLines([['পার্টস',pname(x),part(pid)?.name],['পরিমাণ',x.qty,q],['একক দাম',money(x.price),money(price)],['জমা',money(x.paid),money(paid)],['কাস্টমার',x.customer,cust],['বিক্রেতা',x.seller,sel]]);
+    if(!lines.length)return true;
+    return apply(d=>{const t=d.sales.find(z=>z.id===id);t.pid=pid;t.qty=q;t.price=price;t.paid=paid;t.customer=cust;t.seller=sel;
+      const latest=d.sales.filter(s=>s.pid===pid).sort((a,b)=>b.ts-a.ts)[0];if(latest&&latest.id===id)d.parts.find(p=>p.id===pid).price=price;
+      return{type:'sale',action:'edit',text:'বিক্রয় সম্পাদনা: '+pname(x)+' ('+x.date+')',details:lines}});
+  });
+}
+function delSale(id){
+  const x=db.sales.find(t=>t.id===id);if(!x)return;
+  deleteFlow('বিক্রয় এন্ট্রি মুছবেন?',[pname(x)+' × '+x.qty+' @ '+money(x.price)+' = '+money(x.total),'লাভ: '+money(x.profit)+(x.customer?' | কাস্টমার: '+x.customer:''),'তারিখ: '+x.date,'(স্টক আবার ফেরত আসবে)'],d=>{
+    d.sales=d.sales.filter(t=>t.id!==id);
+    return{type:'sale',action:'delete',text:'বিক্রয় মোছা হয়েছে: '+pname(x)+' × '+x.qty,details:['একক দাম '+money(x.price)+', মোট বিল '+money(x.total)+', জমা '+money(x.paid)+', লাভ '+money(x.profit)+', তারিখ '+x.date+(x.customer?', কাস্টমার: '+x.customer:'')]};
+  });
+}
+
+/* ===================== Rendering ===================== */
+const ACTIONS={editPart,delPart,editBuy,delBuy,editSale,delSale,moreBuy:()=>{buyLimit+=50;render()},moreSell:()=>{sellLimit+=50;render()},moreLog:()=>{logLimit+=100;renderLog()},restoreAuto:i=>restoreAuto(+i),restoreDrive};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const f=ACTIONS[b.dataset.act];if(f)f(b.dataset.id)});
+const btns=(a,id)=>`<td class="act"><button class="sm" data-act="edit${a}" data-id="${esc(id)}">✏️ এডিট</button><button class="sm danger" data-act="del${a}" data-id="${esc(id)}">🗑 ডিলিট</button></td>`;
+const byTs=(a,b)=>b.ts-a.ts;
+function addOptions(){['buyPart','sellPart'].forEach(id=>{let el=$(id),old=el.value;el.innerHTML=db.parts.map(p=>`<option value="${esc(p.id)}">${esc(p.name)} (${stock(p)}টি)</option>`).join('');if(old)el.value=old})}
+function renderParts(){let s=(partSearch.value||'').toLowerCase();partsBody.innerHTML=db.parts.filter(p=>(p.name+' '+p.code).toLowerCase().includes(s)).map(p=>`<tr><td>${esc(p.name)}</td><td>${esc(p.code)}</td><td>${esc(p.cat)}</td><td>${stock(p)}</td><td>${money(avgCost(p))}</td><td>${p.price?money(p.price):'—'}</td>${btns('Part',p.id)}</tr>`).join('')||'<tr><td colspan="7" class="empty">কোনো পার্টস পাওয়া যায়নি</td></tr>'}
+function renderLog(){
+  const t=logType.value,s=(logSearch.value||'').toLowerCase();
+  const rows=db.history.filter(h=>(t==='all'||h.type===t||(t==='system'&&['system','backup','restore'].includes(h.type)))&&(h.text+' '+h.user+' '+h.details.join(' ')).toLowerCase().includes(s));
+  const L={add:'যোগ',edit:'সম্পাদনা',delete:'মুছে ফেলা',undo:'Undo',backup:'ব্যাকআপ',restore:'রিস্টোর',system:'সিস্টেম'};
+  logBody.innerHTML=rows.slice(0,logLimit).map(h=>`<tr><td style="white-space:nowrap">${esc(new Date(h.ts).toLocaleString('bn-BD'))}</td><td>${esc(h.user)}</td><td><span class="pill ${esc(h.action)}">${esc(L[h.action]||h.action)}</span></td><td>${esc(h.text)}${h.details.length?'<ul class="dl">'+h.details.map(l=>'<li>'+esc(l)+'</li>').join('')+'</ul>':''}</td></tr>`).join('')||'<tr><td colspan="4" class="empty">এখনো কোনো কার্যকলাপ নেই</td></tr>';
+  logMore.style.display=rows.length>logLimit?'':'none';
+}
+function render(){
+  addOptions();renderParts();renderLog();
+  const T=totals(db),cogs=db.sales.reduce((s,x)=>s+x.cost,0);
+  kParts.textContent=db.parts.length;kStock.textContent=T.stock;kSales.textContent=money(T.sales);kProfit.textContent=money(T.profit);rBuy.textContent=money(T.buy);rSale.textContent=money(T.sales);rCogs.textContent=money(cogs);rProfit.textContent=money(T.profit);
+  lowStock.innerHTML=db.parts.filter(p=>stock(p)<=p.min).map(p=>`<div style="padding:7px 0;border-bottom:1px solid var(--line)">${esc(p.name)} — <b class="red">${stock(p)}টি</b> <span class="note">(সতর্কতা সীমা ${p.min})</span></div>`).join('')||'কম স্টকের পার্টস নেই।';
+  const bs=(buySearch.value||'').toLowerCase(),bl=[...db.purchases].sort(byTs).filter(x=>(pname(x)+' '+x.supplier).toLowerCase().includes(bs));
+  buyBody.innerHTML=bl.slice(0,buyLimit).map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(pname(x))}</td><td>${x.qty}</td><td>${money(x.cost)}</td><td>${money(x.total)}</td><td>${esc(x.supplier)}</td>${btns('Buy',x.id)}</tr>`).join('')||'<tr><td colspan="7" class="empty">এখনো ক্রয় এন্ট্রি নেই</td></tr>';
+  buyMore.style.display=bl.length>buyLimit?'':'none';
+  const ss=(sellSearch.value||'').toLowerCase(),sl=[...db.sales].sort(byTs).filter(x=>(pname(x)+' '+x.customer+' '+x.seller).toLowerCase().includes(ss));
+  sellBody.innerHTML=sl.slice(0,sellLimit).map(x=>`<tr><td>${esc(x.date)}</td><td>${esc(pname(x))}</td><td>${x.qty}</td><td>${money(x.total)}</td><td>${money(x.paid)}</td><td>${money(x.due)}</td><td class="${x.profit>=0?'green':'red'}">${money(x.profit)}</td><td>${esc(x.seller)}</td>${btns('Sale',x.id)}</tr>`).join('')||'<tr><td colspan="9" class="empty">এখনো বিক্রয় এন্ট্রি নেই</td></tr>';
+  sellMore.style.display=sl.length>sellLimit?'':'none';
+  let sums={};db.sales.forEach(x=>{let a=sums[x.pid]||(sums[x.pid]={name:pname(x),qty:0,sale:0,cost:0,profit:0});a.qty+=x.qty;a.sale+=x.total;a.cost+=x.cost;a.profit+=x.profit});
+  profitBody.innerHTML=Object.values(sums).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.sale)}</td><td>${money(x.cost)}</td><td class="${x.profit>=0?'green':'red'}">${money(x.profit)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">বিক্রয় হলে এখানে লাভের হিসাব আসবে</td></tr>';
+  undoBtn.disabled=!undoStack.length;undoBtn.textContent='↩ Undo'+(undoStack.length?' ('+undoStack.length+')':'');
+  if(document.activeElement!==userName)userName.value=db.settings.user||'';
+  const hasData=db.parts.length>0,lb=db.settings.lastBackup,days=lb?(Date.now()-lb)/864e5:null;
+  backupNote.innerHTML=(driveDue()?`<div class="warn">☁ আজকের Google Drive ব্যাকআপ বাকি। <button class="sm gold" onclick="driveUpload(true)">এখনই পাঠান</button></div>`:'')+(loadWarn?`<div class="warn">⚠ ${esc(loadWarn)}</div>`:'')+(hasData&&(lb===null||days>7)?`<div class="warn">💾 ${lb===null?'এখনো কোনো ব্যাকআপ নেওয়া হয়নি।':'সর্বশেষ ব্যাকআপ '+Math.floor(days)+' দিন আগে।'} <a href="#" onclick="go('backupTab');return false">এখনই ব্যাকআপ নিন</a></div>`:'');
+  backupInfo.innerHTML='পার্টস '+db.parts.length+'টি · ক্রয় '+db.purchases.length+'টি · বিক্রয় '+db.sales.length+'টি · ইতিহাস '+db.history.length+'টি · ডেটা আকার ≈ '+Math.ceil(JSON.stringify(db).length/1024)+' KB<br>সর্বশেষ ব্যাকআপ: '+(lb?esc(new Date(lb).toLocaleString('bn-BD')):'কখনো নেওয়া হয়নি');
+  if(document.activeElement!==dClientId)dClientId.value=dcfg.clientId||'';dAutoChk.checked=!!dcfg.auto;
+  if(!driveBusy)driveStatus.innerHTML=dcfg.last?'সর্বশেষ Drive ব্যাকআপ: '+esc(new Date(dcfg.last).toLocaleString('bn-BD')):'এখনো Drive-এ ব্যাকআপ যায়নি।';
+  const au=rd(AUTO_KEY)||[];
+  autoList.innerHTML=au.map((a,i)=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)"><span class="note">${esc(new Date(a.ts).toLocaleString('bn-BD'))} — পার্টস ${a.parts.length}, ক্রয় ${a.purchases.length}, বিক্রয় ${a.sales.length}</span><button class="sm gold" data-act="restoreAuto" data-id="${i}">ফিরিয়ে আনুন</button></div>`).join('')||'<div class="note">এখনো কোনো অটো-সেভ কপি নেই।</div>';
+}
+
+/* ===================== Backup & Restore ===================== */
+function backup(){
+  db.settings.lastBackup=Date.now();
+  addHistory('system','backup','ব্যাকআপ ডাউনলোড করা হয়েছে',['পার্টস '+db.parts.length+', ক্রয় '+db.purchases.length+', বিক্রয় '+db.sales.length]);
+  persist();
+  const out={app:'JS Motors',...db,exportedAt:new Date().toISOString()};
+  let blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download='JS-Motors-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  render();
+}
+async function shareBackup(){
+  const out={app:'JS Motors',...db,exportedAt:new Date().toISOString()};
+  const name='JS-Motors-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  let file;try{file=new File([JSON.stringify(out,null,2)],name,{type:'application/json'})}catch(_){file=null}
+  if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({files:[file],title:'JS Motors ব্যাকআপ',text:'JS Motors ব্যাকআপ — '+new Date().toLocaleString('bn-BD')});
+      db.settings.lastBackup=Date.now();
+      addHistory('system','backup','ব্যাকআপ শেয়ার করা হয়েছে (Gmail/Drive)',['পার্টস '+db.parts.length+', ক্রয় '+db.purchases.length+', বিক্রয় '+db.sales.length]);
+      persist();render();toast('ব্যাকআপ শেয়ার হয়েছে। পাঠানো হয়েছে কিনা Gmail/Drive-এ নিশ্চিত করুন।',false);
+    }catch(e){if(e&&e.name!=='AbortError')alert('শেয়ার করা যায়নি; ফাইল ডাউনলোড হচ্ছে।'),backup()}
+  }else{
+    backup();
+    alert('এই ব্রাউজারে সরাসরি শেয়ার সুবিধা নেই, তাই ব্যাকআপ ফাইল ডাউনলোড হয়েছে।\n\nএখন Gmail-এ নিজের ঠিকানায় ফাইলটি Attach করে পাঠান, অথবা Google Drive-এ আপলোড করুন।');
+  }
+}
+function replaceWith(d,label,type,extra){
+  const ok=apply(x=>{x.parts=d.parts;x.purchases=d.purchases;x.sales=d.sales;return{type:'system',action:type,text:label,details:['পার্টস '+d.parts.length+', ক্রয় '+d.purchases.length+', বিক্রয় '+d.sales.length+(extra?' · '+extra:'')]}});
+  if(ok&&d.history&&d.history.length){const have=new Set(db.history.map(h=>h.id));d.history.forEach(h=>{if(!have.has(h.id))db.history.push(h)});db.history.sort((a,b)=>b.ts-a.ts);db.history.length=Math.min(db.history.length,3000);lastTs=Math.max(lastTs,...db.purchases.map(x=>x.ts),...db.sales.map(x=>x.ts),0);save()}
+  return ok;
+}
+function restore(e){
+  let f=e.target.files[0];if(!f)return;let r=new FileReader();
+  r.onload=()=>{try{
+    const d=build(JSON.parse(r.result));
+    if(confirm('বর্তমান ডেটা প্রতিস্থাপন করে ব্যাকআপ ফিরিয়ে আনবেন?\n\nব্যাকআপে আছে: পার্টস '+d.parts.length+'টি, ক্রয় '+d.purchases.length+'টি, বিক্রয় '+d.sales.length+'টি।\n\n(প্রয়োজনে ↩ Undo করে আগের ডেটা ফেরত পাবেন)')){
+      if(replaceWith(d,'ব্যাকআপ থেকে ডেটা ফিরিয়ে আনা হয়েছে','restore','ফাইল: '+f.name))toast('ব্যাকআপ ফিরিয়ে আনা হয়েছে',true);
+    }
+  }catch(err){alert('ফাইলটি সঠিক JS Motors ব্যাকআপ নয়'+(err&&err.message?' ('+err.message+')':''))}e.target.value=''};
+  r.readAsText(f);
+}
+function autoSnap(){
+  if(!db.parts.length)return;
+  let a=rd(AUTO_KEY)||[];if(a[0]&&Date.now()-a[0].ts<864e5)return;
+  a.unshift({ts:Date.now(),...clone(core(db))});a=a.slice(0,3);
+  while(a.length){try{localStorage.setItem(AUTO_KEY,JSON.stringify(a));return}catch(_){a.pop()}}
+}
+function restoreAuto(i){
+  const a=(rd(AUTO_KEY)||[])[i];if(!a)return;
+  try{const d=sanitize({parts:a.parts,purchases:a.purchases,sales:a.sales});
+    if(confirm('এই অটো-সেভ কপি ('+new Date(a.ts).toLocaleString('bn-BD')+') ফিরিয়ে আনবেন? বর্তমান ডেটা প্রতিস্থাপিত হবে (Undo করা যাবে)।'))replaceWith(d,'অটো-সেভ কপি থেকে ডেটা ফিরিয়ে আনা হয়েছে','restore');
+  }catch(e){alert('এই কপি ফিরিয়ে আনা যায়নি: '+e.message)}
+}
+function clearData(){
+  if(confirm('সত্যিই কি এই ডিভাইসের সব JS Motors ডেটা (পার্টস, ক্রয়, বিক্রয়) মুছে ফেলবেন? আগে ব্যাকআপ নিন।\n\n(ইতিহাস থাকবে; ↩ Undo করা যাবে)'))
+    apply(d=>{const n=d.parts.length,b=d.purchases.length,s=d.sales.length;d.parts=[];d.purchases=[];d.sales=[];return{type:'system',action:'delete',text:'সব ডেটা মুছে ফেলা হয়েছে',details:['মুছে গেছে: পার্টস '+n+', ক্রয় '+b+', বিক্রয় '+s]}});
+}
+
+/* ===================== Google Drive backup =====================
+   Uses Google Identity Services + Drive API (scope drive.file: the app can only see files it created). */
+const DKEY='jsmotors_drive';
+let dcfg=Object.assign({clientId:'',auto:false,last:0},rd(DKEY)||{}),gToken=null,gExp=0,driveBusy=false;
+const saveD=()=>{try{localStorage.setItem(DKEY,JSON.stringify(dcfg))}catch(_){}};
+function saveDrive(){dcfg.clientId=dClientId.value.trim();dcfg.auto=dAutoChk.checked;saveD();render()}
+const driveDue=()=>!!(dcfg.auto&&dcfg.clientId&&db.parts.length&&Date.now()-dcfg.last>20*36e5);
+const setDS=h=>{driveStatus.innerHTML=h};
+function loadGsi(){return new Promise((res,rej)=>{if(window.google&&google.accounts&&google.accounts.oauth2)return res();const s=document.createElement('script');s.src='https://accounts.google.com/gsi/client';s.onload=res;s.onerror=()=>rej(new Error('ইন্টারনেট নেই বা Google লোড হয়নি'));document.head.appendChild(s)})}
+async function getToken(){
+  if(gToken&&Date.now()<gExp-60000)return gToken;
+  if(!dcfg.clientId)throw new Error('আগে Google Client ID বসান');
+  await loadGsi();
+  return new Promise((res,rej)=>{
+    const c=google.accounts.oauth2.initTokenClient({client_id:dcfg.clientId,scope:'https://www.googleapis.com/auth/drive.file',prompt:'',
+      callback:r=>{if(r.error)return rej(new Error(r.error_description||r.error));gToken=r.access_token;gExp=Date.now()+(r.expires_in||3600)*1000;res(gToken)},
+      error_callback:e=>rej(new Error('Google লগইন সম্পন্ন হয়নি ('+((e&&e.type)||'error')+')'))});
+    c.requestAccessToken();
+  });
+}
+async function gx(url,t,opt){
+  const r=await fetch(url,{...opt,headers:{Authorization:'Bearer '+t,...((opt&&opt.headers)||{})}});
+  if(r.status===401){gToken=null;throw new Error('Google অনুমতি শেষ; আবার চেষ্টা করুন')}
+  if(!r.ok){let m='';try{m=(await r.json()).error.message}catch(_){}throw new Error('Drive ত্রুটি '+r.status+(m?': '+m:''))}
+  return r;
+}
+const DAPI='https://www.googleapis.com/drive/v3/files';
+async function dFolder(t){
+  const q=encodeURIComponent("name='JS Motors Backup' and mimeType='application/vnd.google-apps.folder' and trashed=false");
+  const f=(await(await gx(DAPI+'?q='+q+'&fields=files(id)',t)).json()).files;
+  if(f&&f[0])return f[0].id;
+  return (await(await gx(DAPI,t,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:'JS Motors Backup',mimeType:'application/vnd.google-apps.folder'})})).json()).id;
+}
+async function dFiles(t,fid){
+  const q=encodeURIComponent("'"+fid+"' in parents and trashed=false");
+  return (await(await gx(DAPI+'?q='+q+'&fields=files(id,name,createdTime)&orderBy=createdTime%20desc&pageSize=100',t)).json()).files||[];
+}
+async function driveUpload(manual){
+  if(driveBusy)return;driveBusy=true;setDS('⏳ Drive-এ পাঠানো হচ্ছে…');
+  try{
+    if(!navigator.onLine)throw new Error('ইন্টারনেট নেই');
+    const t=await getToken(),fid=await dFolder(t);
+    const json=JSON.stringify({app:'JS Motors',...db,exportedAt:new Date().toISOString()});
+    const name='JS-Motors-'+new Date().toLocaleDateString('en-CA')+'.json';
+    for(const f of (await dFiles(t,fid)).filter(f=>f.name===name))await gx(DAPI+'/'+f.id,t,{method:'DELETE'});
+    const b='jsm'+uid();
+    await gx('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',t,{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+b},
+      body:'--'+b+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify({name,parents:[fid]})+'\r\n--'+b+'\r\nContent-Type: application/json\r\n\r\n'+json+'\r\n--'+b+'--'});
+    for(const f of (await dFiles(t,fid)).slice(7))await gx(DAPI+'/'+f.id,t,{method:'DELETE'});
+    dcfg.last=Date.now();saveD();db.settings.lastBackup=Date.now();
+    addHistory('system','backup','Google Drive-এ ব্যাকআপ পাঠানো হয়েছে',[name]);persist();
+    toast('☁ Drive-এ ব্যাকআপ সম্পন্ন',false);
+  }catch(e){setDS('❌ Drive ব্যাকআপ হয়নি: '+esc(e.message));if(manual)alert('Drive ব্যাকআপ হয়নি: '+e.message)}
+  finally{driveBusy=false;render()}
+}
+async function driveShow(){
+  try{
+    const t=await getToken(),fid=await dFolder(t),fs=await dFiles(t,fid);
+    driveFiles.innerHTML=fs.map(f=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)"><span class="note">${esc(f.name)}</span><button class="sm gold" data-act="restoreDrive" data-id="${esc(f.id)}">ফিরিয়ে আনুন</button></div>`).join('')||'<div class="note">Drive-এ এখনো কোনো ব্যাকআপ নেই।</div>';
+  }catch(e){alert('Drive থেকে তালিকা আনা যায়নি: '+e.message)}
+}
+async function restoreDrive(id){
+  try{
+    const t=await getToken(),d=build(JSON.parse(await(await gx(DAPI+'/'+id+'?alt=media',t)).text()));
+    if(confirm('Drive-এর এই ব্যাকআপ ফিরিয়ে আনবেন?\nপার্টস '+d.parts.length+'টি, ক্রয় '+d.purchases.length+'টি, বিক্রয় '+d.sales.length+'টি।\n(বর্তমান ডেটা প্রতিস্থাপিত হবে; Undo করা যাবে)'))replaceWith(d,'Google Drive ব্যাকআপ থেকে ডেটা ফিরিয়ে আনা হয়েছে','restore');
+  }catch(e){alert('ফিরিয়ে আনা যায়নি: '+e.message)}
+}
+setInterval(()=>{if(driveDue()&&!driveBusy&&document.visibilityState==='visible')driveUpload(false)},10*60000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&driveDue()&&!driveBusy)driveUpload(false)});
+
+/* ===================== Install (Add to Home screen) ===================== */
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;installBtn.style.display=''});
+window.addEventListener('appinstalled',()=>{deferredInstall=null;installBtn.style.display='none'});
+async function installApp(){if(!deferredInstall)return;deferredInstall.prompt();await deferredInstall.userChoice;deferredInstall=null;installBtn.style.display='none'}
+if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol)){navigator.serviceWorker.register('sw.js').catch(()=>{})}
+
+/* ===================== Start ===================== */
+db=loadDB();
+lastTs=Math.max(0,...db.purchases.map(x=>x.ts),...db.sales.map(x=>x.ts));
+undoStack=Array.isArray(rd(UNDO_KEY))?rd(UNDO_KEY):[];
+autoSnap();
+if(!localStorage.getItem(KEY)&&(db.parts.length||db.history.length))persist();
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(_){}
+render();
+setTimeout(()=>{if(driveDue()&&!driveBusy)driveUpload(false)},2500);
+</script></body></html>
