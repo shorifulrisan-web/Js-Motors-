@@ -100,9 +100,9 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
 </section>
 <section id="sell" class="panel"><div class="box"><h2>নতুন বিক্রয়</h2><div class="grid">
 <div><label>পার্টস</label><input id="sellPartS" placeholder="পার্টস খুঁজুন (নাম বা কোড)" oninput="partSearch('sellPart')" onkeydown="if(event.key==='Enter'){event.preventDefault();partPick('sellPart')}" style="margin-bottom:6px"><select id="sellPart" onchange="suggestPrice()"></select><div class="row" style="margin-top:6px"><input id="sellCode" placeholder="কোড লিখুন / স্ক্যান করুন" onkeydown="if(event.key==='Enter'){event.preventDefault();pickByCode('sellPart','sellCode')}"><button class="sm" type="button" style="flex:0 0 auto" onclick="scanTo('sellPart','sellCode')">📷 স্ক্যান</button></div></div><div><label>পরিমাণ</label><input id="sellQty" type="number" min="1" value="1" oninput="updatePreview()"></div>
-<div><label>প্রতি পিস বিক্রয়মূল্য (৳)</label><input id="sellPrice" type="number" min="0" step=".01" oninput="updatePreview()"></div><div><label>কাস্টমারের নাম (ঐচ্ছিক)</label><input id="customer" placeholder="কাস্টমারের নাম"></div><div><label>কাস্টমারের ফোন নম্বর (ঐচ্ছিক)</label><input id="customerPhone" type="tel" inputmode="tel" placeholder="01XXXXXXXXX"></div>
+<div><label>প্রতি পিস বিক্রয়মূল্য (৳)</label><input id="sellPrice" type="number" min="0" step=".01" oninput="updatePreview()"></div><div><label>কাস্টমারের নাম (ঐচ্ছিক)</label><input id="customer" list="custList" autocomplete="off" oninput="custPick('n')" placeholder="নাম লিখুন / আগের ক্রেতা বাছুন"></div><div><label>কাস্টমারের ফোন নম্বর (ঐচ্ছিক)</label><input id="customerPhone" list="phoneList" autocomplete="off" oninput="custPick('p')" type="tel" inputmode="tel" placeholder="01XXXXXXXXX"></div>
 <div><label>জমা টাকা (৳)</label><input id="sellPaid" type="number" min="0" value="0"></div><div><label>বিক্রেতা</label><input id="seller" placeholder="আপনার / সহকারীর নাম"></div>
-</div><div id="sellPreview" class="note" style="margin-top:10px;font-size:14px"></div><div id="cartBox"></div><div class="actions"><button onclick="addToCart()">➕ বিলে আরেকটি পার্টস যোগ করুন</button><button class="gold" onclick="sale()">বিক্রয় নিশ্চিত করুন</button></div><p class="note">একাধিক পার্টস এক বিলে বিক্রি করতে প্রতিটি পার্টস "বিলে যোগ করুন" দিয়ে তালিকায় তুলুন; তালিকা থাকলে "নিশ্চিত করুন" শুধু তালিকার পার্টসগুলো বিক্রি করবে (ফর্মে থাকা লাইন যোগ না করলে ধরা হবে না) এবং জমা টাকা পুরো বিলের জন্য ধরা হবে। বিক্রয় নিশ্চিত করলে স্টক কমবে। জমা টাকার চেয়ে বিল বেশি হলে বাকি হিসাব তৈরি হবে। স্টক না থাকলে বিক্রি হবে না।</p></div>
+</div><datalist id="custList"></datalist><datalist id="phoneList"></datalist><div id="sellPreview" class="note" style="margin-top:10px;font-size:14px"></div><div id="cartBox"></div><div class="actions"><button class="primary" onclick="pickOpen()">🧺 অনেক পণ্য বাছুন</button><button onclick="addToCart()">➕ বিলে আরেকটি পার্টস যোগ করুন</button><button class="gold" onclick="sale()">বিক্রয় নিশ্চিত করুন</button></div><p class="note">একাধিক পার্টস এক বিলে বিক্রি করতে প্রতিটি পার্টস "বিলে যোগ করুন" দিয়ে তালিকায় তুলুন; তালিকা থাকলে "নিশ্চিত করুন" শুধু তালিকার পার্টসগুলো বিক্রি করবে (ফর্মে থাকা লাইন যোগ না করলে ধরা হবে না) এবং জমা টাকা পুরো বিলের জন্য ধরা হবে। বিক্রয় নিশ্চিত করলে স্টক কমবে। জমা টাকার চেয়ে বিল বেশি হলে বাকি হিসাব তৈরি হবে। স্টক না থাকলে বিক্রি হবে না।</p></div>
 <div class="box" style="margin-top:14px"><div class="row"><h2 style="flex:2">সাম্প্রতিক বিক্রয়</h2><input id="sellSearch" placeholder="পার্টস, কাস্টমার, ফোন বা বিক্রেতা খুঁজুন" oninput="sellLimit=30;render()"></div><div class="tablewrap"><table><thead><tr><th>তারিখ</th><th>পার্টস</th><th>পরিমাণ</th><th>মোট বিল</th><th>আদায়</th><th>বাকি</th><th>লাভ</th><th>লাভ %</th><th>বিক্রেতা</th><th>অ্যাকশন</th></tr></thead><tbody id="sellBody"></tbody></table></div><button id="sellMore" class="more" data-act="moreSell">আরও দেখান</button></div>
 </section>
 <section id="dueTab" class="panel"><div class="cards"><div class="card"><div class="kicker">মোট বাকি</div><div class="value red" id="dTotal">৳0</div></div><div class="card"><div class="kicker">বাকি আছে এমন কাস্টমার</div><div class="value" id="dCount">0</div></div></div>
@@ -549,10 +549,48 @@ function saleCart(){
     cart=[];customer.value='';customerPhone.value='';sellPaid.value=0;render();
   }
 }
+const defPrice=p=>p.smin>0?p.smin:(p.price>0?p.price:Math.ceil(avgCost(p)*1.2));
+let fixT='',fixP='',pickQty={};
+function cartCost(){const bm={};let cost=0,tot=0;cart.forEach(c=>{const p=part(c.pid),bt=bm[c.pid]||(bm[c.pid]=p.batches.map(b=>({...b})));let n=c.qty;for(const b of bt){if(!n)break;const t=Math.min(n,b.qty);cost+=t*b.cost;b.qty-=t;n-=t}tot+=c.qty*c.price});return{cost:r2(cost),tot:r2(tot)}}
+function cartFix(){
+  if(!cart.length)return alert('আগে পণ্য তুলুন');
+  const base=cart.map(c=>{const p=part(c.pid);return p.smin>0?p.smin:(p.price>0?p.price:c.price)}),tm=cart.reduce((z,c,i)=>z+c.qty*base[i],0);
+  let T=+fixT;if(!(T>0)&&+fixP>0)T=cartCost().cost+(+fixP);
+  if(!(T>0)||!(tm>0))return alert('মোট বিল অথবা মোট লাভ লিখুন');
+  const f=T/tm;cart.forEach((c,i)=>{const b=base[i]*f,st=b>=100?5:1;c.price=Math.max(0,Math.round(b/st)*st)});
+  const diff=T-cart.reduce((z,c)=>z+c.qty*c.price,0);
+  if(diff){let j=0;cart.forEach((c,i)=>{if(c.qty<cart[j].qty)j=i});const c=cart[j];c.price=Math.max(0,r2(c.price+diff/c.qty));if(c.qty>1)c.price=Math.round(c.price)}
+  render();
+}
+function cartMin(){cart.forEach(c=>{c.price=defPrice(part(c.pid))});render()}
+function cartPrice(i){const c=cart[+i];if(!c)return;const v=prompt('নতুন একক দাম (৳)',c.price);if(v===null)return;const n=+v;if(v===''||!(n>=0))return alert('দাম ঠিক নয়');c.price=n;render()}
 function renderCart(){
   if(!cart.length){cartBox.innerHTML='';return}
-  const tot=cart.reduce((z,c)=>z+c.qty*c.price,0);
-  cartBox.innerHTML='<div class="box" style="margin-top:12px;background:#fffbea"><h3>🧾 এই বিলের তালিকা ('+cart.length+'টি)</h3>'+cart.map((c,i)=>'<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--line)"><span>'+esc(part(c.pid)?.name||'?')+' × '+c.qty+' @ '+money(c.price)+' = <b>'+money(c.qty*c.price)+'</b></span><button class="sm danger" data-act="cartDel" data-id="'+i+'">✖</button></div>').join('')+'<div style="padding-top:8px;font-weight:800">মোট বিল: '+money(tot)+'</div><p class="note">নিচে "জমা টাকা" দিন (পুরো বিলের জন্য), তারপর "বিক্রয় নিশ্চিত করুন"।</p></div>';
+  const cc=cartCost(),pr=r2(cc.tot-cc.cost),cl=pr>=0?'green':'red';
+  cartBox.innerHTML='<div class="box" style="margin-top:12px;background:#fffbea"><h3>🧾 এই বিলের তালিকা ('+cart.length+'টি)</h3>'+cart.map((c,i)=>{const p=part(c.pid),rm=rangeMsg(p,c.price);return '<div style="padding:6px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:6px;align-items:center"><span>'+esc(p?.name||'?')+' × '+c.qty+' @ '+money(c.price)+' = <b>'+money(c.qty*c.price)+'</b></span><span style="white-space:nowrap"><button class="sm" data-act="cartPrice" data-id="'+i+'">✏️</button> <button class="sm danger" data-act="cartDel" data-id="'+i+'">✖</button></span></div>'+(rm?'<div class="note red">⚠ '+esc(rm)+'</div>':'')+'</div>'}).join('')
+   +'<div style="padding-top:8px;font-weight:800">মোট বিল: '+money(cc.tot)+'</div><div class="note">ক্রয়মূল্য (FIFO) '+money(cc.cost)+' · <b class="'+cl+'">লাভ '+money(pr)+' ('+pct(pr,cc.cost)+')</b></div>'
+   +'<div class="row" style="margin-top:8px"><div><label>ক্রেতা মোট কত দেবে (৳)</label><input id="fixTotal" type="number" min="0" value="'+esc(fixT)+'" oninput="fixT=this.value" placeholder="যেমন 5000"></div><div><label>অথবা মোট লাভ চাই (৳)</label><input id="fixProfit" type="number" min="0" value="'+esc(fixP)+'" oninput="fixP=this.value" placeholder="যেমন 700"></div></div>'
+   +'<div class="actions"><button class="gold sm" onclick="cartFix()">📊 সর্বনিম্ন দামের ওপর সমান % এ ভাগ করুন</button><button class="sm" onclick="cartMin()">সর্বনিম্ন দামে ফেরান</button><button class="sm" onclick="sellPaid.value=cartCost().tot">💵 পুরো টাকা জমা</button></div><p class="note">নিচে "জমা টাকা" দিন (পুরো বিলের জন্য), তারপর "বিক্রয় নিশ্চিত করুন"। প্রতিটি পণ্য আলাদা বিক্রয় হিসেবে সেভ হবে, তাই স্টক ও লাভ ঠিক থাকবে।</p></div>';
+}
+function custData(){const m=new Map();[...db.sales].sort(byTs).forEach(x=>{const n=(x.customer||'').trim();if(!n&&!x.cphone)return;const k=n?n.toLowerCase():'p:'+x.cphone;let c=m.get(k);if(!c){c={name:n,phone:x.cphone||'',due:0};m.set(k,c)}if(!c.phone&&x.cphone)c.phone=x.cphone;c.due+=x.due>0?x.due:0});return [...m.values()]}
+function renderCust(){const L=custData();custList.innerHTML=L.filter(c=>c.name).map(c=>'<option value="'+esc(c.name)+'">'+esc(c.phone)+(c.due>0?' · বাকি '+money(c.due):'')+'</option>').join('');phoneList.innerHTML=L.filter(c=>c.phone).map(c=>'<option value="'+esc(c.phone)+'">'+esc(c.name)+(c.due>0?' · বাকি '+money(c.due):'')+'</option>').join('')}
+function custPick(w){const L=custData();if(w==='n'){const c=L.find(x=>x.name&&x.name.toLowerCase()===customer.value.trim().toLowerCase());if(c&&c.phone&&!customerPhone.value)customerPhone.value=c.phone}else{const c=L.find(x=>x.phone&&x.phone===customerPhone.value.trim());if(c&&c.name&&!customer.value)customer.value=c.name}}
+function pickOpen(){
+  pickQty={};openModal('পণ্য বাছুন','<input id="pkQ" placeholder="নাম/কোড খুঁজুন" oninput="pickRender()"><select id="pkC" onchange="pickRender()" style="margin-top:6px"><option value="">সব ক্যাটাগরি</option>'+catList().map(c=>'<option value="'+esc(c)+'">'+esc(c)+'</option>').join('')+'</select><div id="pkList" style="margin-top:8px"></div><div class="note" id="pkSum"></div>',pickAdd);
+  $('mSave').textContent='🧾 বিলে যোগ করুন';$('mCancel').textContent='বন্ধ';pickRender();
+}
+function pickRender(){
+  const q=($('pkQ').value||'').trim().toLowerCase(),c=$('pkC').value;
+  const L=db.parts.filter(p=>stock(p)>0&&(!c||p.cat===c)&&(p.name+' '+p.code).toLowerCase().includes(q));
+  $('pkList').innerHTML=L.map(p=>'<div style="display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)"><div style="flex:1;min-width:0"><b>'+esc(p.name)+'</b><div class="note">স্টক '+stock(p)+(p.smin||p.smax?' · দাম '+(p.smin||'')+'–'+(p.smax||''):'')+'</div></div><button class="sm" type="button" onclick="pickStep(\''+esc(p.id)+'\',-1)">−</button><b id="pq_'+esc(p.id)+'" style="min-width:24px;text-align:center">'+(pickQty[p.id]||0)+'</b><button class="sm primary" type="button" onclick="pickStep(\''+esc(p.id)+'\',1)">+</button></div>').join('')||'<div class="empty">কোনো পার্টস পাওয়া যায়নি</div>';pickSum();
+}
+function pickSum(){const k=Object.values(pickQty).filter(v=>v>0).length;$('pkSum').textContent=k?k+'টি পণ্য বাছা হয়েছে':''}
+function pickStep(id,d){const p=part(id);if(!p)return;const inC=cart.filter(c=>c.pid===id).reduce((z,c)=>z+c.qty,0),n=Math.max(0,Math.min(stock(p)-inC,(pickQty[id]||0)+d));pickQty[id]=n;const e=$('pq_'+id);if(e)e.textContent=n;pickSum()}
+function pickAdd(){
+  const ids=Object.keys(pickQty).filter(k=>pickQty[k]>0&&part(k));
+  if(!ids.length){alert('অন্তত একটি পণ্যের পরিমাণ দিন');return false}
+  ids.forEach(k=>cart.push({pid:k,qty:pickQty[k],price:defPrice(part(k))}));
+  render();toast('✔ '+ids.length+'টি পণ্য বিলে যোগ হয়েছে (সর্বনিম্ন দামে)',false);return true;
 }
 
 /* ===================== Due (বাকি আদায়) & Cash book ===================== */
@@ -661,7 +699,7 @@ function renderMoney(){
     return `<div style="padding:12px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><b>${esc(g.name)}</b>${g.phone?'<div class="note">📞 '+esc(g.phone)+'</div>':''}</div><div style="text-align:right"><div class="red" style="font-size:20px;font-weight:800">${money(g.due)}</div><div class="note">${g.sales.length}টি বিক্রয়ে বাকি</div></div></div><ul class="dl">${g.sales.map(s=>'<li>'+esc(pname(s))+' × '+s.qty+' — বাকি '+money(s.due)+' ('+esc(s.date)+')</li>').join('')}</ul><div class="actions" style="margin-top:8px"><button class="gold sm" data-act="collect" data-id="${esc(g.key)}">💵 টাকা পেলাম</button>${g.phone?`<a class="lnk" href="${esc(telHref(g.phone))}">📞 কল</a><a class="lnk" target="_blank" rel="noopener" href="${esc(waHref(g.phone,msg))}">💬 WhatsApp</a>`:''}</div></div>`}).join('')||'<div class="empty">'+(groups.length?'কিছু পাওয়া যায়নি':'কোনো বাকি নেই 🎉')+'</div>';
 }
 
-const ACTIONS={labelPart,payflow:payFlow,receipt:receipt,cartDel:i=>{cart.splice(+i,1);render()},collect:collectFlow,editCash,delCash,catFilter:c=>{go('parts');partCatFilter.value=c;renderParts()},viewPhoto,editPart,delPart,editBuy,delBuy,editSale,delSale,moreBuy:()=>{buyLimit+=50;render()},moreSell:()=>{sellLimit+=50;render()},moreLog:()=>{logLimit+=100;renderLog()},restoreAuto:i=>restoreAuto(+i),restoreDrive};
+const ACTIONS={cartPrice,labelPart,payflow:payFlow,receipt:receipt,cartDel:i=>{cart.splice(+i,1);render()},collect:collectFlow,editCash,delCash,catFilter:c=>{go('parts');partCatFilter.value=c;renderParts()},viewPhoto,editPart,delPart,editBuy,delBuy,editSale,delSale,moreBuy:()=>{buyLimit+=50;render()},moreSell:()=>{sellLimit+=50;render()},moreLog:()=>{logLimit+=100;renderLog()},restoreAuto:i=>restoreAuto(+i),restoreDrive};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const f=ACTIONS[b.dataset.act];if(f)f(b.dataset.id)});
 const btns=(a,id)=>`<td class="act"><button class="sm" data-act="edit${a}" data-id="${esc(id)}">✏️ এডিট</button><button class="sm danger" data-act="del${a}" data-id="${esc(id)}">🗑 ডিলিট</button></td>`;
 const byTs=(a,b)=>b.ts-a.ts;
@@ -694,7 +732,7 @@ function render(){
   sellMore.style.display=sl.length>sellLimit?'':'none';
   let sums={};db.sales.forEach(x=>{let a=sums[x.pid]||(sums[x.pid]={name:pname(x),qty:0,sale:0,cost:0,profit:0});a.qty+=x.qty;a.sale+=x.total;a.cost+=x.cost;a.profit+=x.profit});
   profitBody.innerHTML=Object.values(sums).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.sale)}</td><td>${money(x.cost)}</td><td class="${x.profit>=0?'green':'red'}">${money(x.profit)}</td><td class="${x.profit>=0?'green':'red'}">${pct(x.profit,x.cost)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">বিক্রয় হলে এখানে লাভের হিসাব আসবে</td></tr>';
-  renderMoney();renderCart();updatePreview();renderViz();renderHomeRep();renderHStock();undoBtn.disabled=!undoStack.length;undoBtn.textContent='↩ Undo'+(undoStack.length?' ('+undoStack.length+')':'');redoBtn.disabled=!redoStack.length;redoBtn.textContent='↪ Redo'+(redoStack.length?' ('+redoStack.length+')':'');
+  renderMoney();renderCart();renderCust();updatePreview();renderViz();renderHomeRep();renderHStock();undoBtn.disabled=!undoStack.length;undoBtn.textContent='↩ Undo'+(undoStack.length?' ('+undoStack.length+')':'');redoBtn.disabled=!redoStack.length;redoBtn.textContent='↪ Redo'+(redoStack.length?' ('+redoStack.length+')':'');
   if(document.activeElement!==userName)userName.value=db.settings.user||'';
   const hasData=db.parts.length>0,lb=db.settings.lastBackup,days=lb?(Date.now()-lb)/864e5:null;
   backupNote.innerHTML=(driveDue()?`<div class="warn">☁ আজকের Google Drive ব্যাকআপ বাকি। <button class="sm gold" onclick="driveUpload(true)">এখনই পাঠান</button></div>`:'')+(loadWarn?`<div class="warn">⚠ ${esc(loadWarn)}</div>`:'')+(hasData&&(lb===null||days>7)?`<div class="warn">💾 ${lb===null?'এখনো কোনো ব্যাকআপ নেওয়া হয়নি।':'সর্বশেষ ব্যাকআপ '+Math.floor(days)+' দিন আগে।'} <a href="#" onclick="go('backupTab');return false">এখনই ব্যাকআপ নিন</a></div>`:'');
