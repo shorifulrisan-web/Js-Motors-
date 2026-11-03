@@ -62,7 +62,7 @@ header{flex-direction:column;align-items:stretch}.htop{display:flex;justify-cont
 .hday{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.hday>div{background:#ffffff14;border-radius:12px;padding:9px 6px;text-align:center}.hday small{display:block;font-size:11px;color:#d9c18a}.hday b{font-size:19px;color:#fff;font-weight:800}
 .bigbtns{display:grid;grid-template-columns:1fr 1fr;gap:12px}.bb{background:#f3f5f8;border-radius:12px;padding:18px 8px;font-size:17px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink)}.bb span{font-size:36px}
 .sect h3{padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:10px}.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.sc{background:none;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;font-size:12.5px;text-align:center;border-radius:10px;font-weight:650;line-height:1.3}.sc i{font-style:normal;font-size:30px}
-</style></head>
+.qbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.qb{background:#f3f5f8;border:0;border-radius:12px;padding:12px 2px;font-size:13.5px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--ink);cursor:pointer}.qb span{font-size:26px}</style></head>
 <body>
 <header><div class="htop"><div class="brand">JS MOTORS <small>PARTS & BUSINESS MANAGER</small></div><div class="hstock" onclick="toggleStock()"><small>বর্তমান স্টক (ক্রয়মূল্যে) <span id="hEye">👁</span></small><b id="hStock">৳ ••••••</b></div></div>
 <div class="hday"><div><small>আজকের বিক্রয়</small><b id="hSale">৳0</b></div><div><small>আজকের লাভ</small><b id="hProfit">৳0</b></div><div><small>লাভের হার</small><b id="hPct">—</b></div></div>
@@ -73,6 +73,12 @@ header{flex-direction:column;align-items:stretch}.htop{display:flex;justify-cont
 </nav>
 <section id="home" class="panel active">
 <div id="backupNote"></div>
+<div class="box" style="margin-bottom:14px"><div class="qbtns"><button class="qb" onclick="go('buy')"><span>📦</span>কেনা</button><button class="qb" onclick="go('sell')"><span>🛍️</span>বেচা</button><button class="qb" onclick="go('parts')"><span>🔩</span>স্টক</button><button class="qb" onclick="dailyPdf()"><span>📄</span>PDF হিসাব</button></div></div>
+<div class="box" style="margin-bottom:14px"><div class="row"><h2 style="flex:2">বিক্রি · ক্রয় · খরচ</h2><select id="homeGPeriod" onchange="renderHomeGraph()"><option value="d7" selected>৭ দিন</option><option value="d30">৩০ দিন</option><option value="m6">৬ মাস</option></select></div><div id="homeGraph"></div></div>
+<div class="box sect" style="margin-bottom:14px"><h3>খাতা সমূহ</h3><div class="sg"><button class="sc" onclick="go('buy')"><i>📋</i>কেনার খাতা</button><button class="sc" onclick="go('sell')"><i>🧾</i>বেচার খাতা</button><button class="sc" onclick="go('dueTab')"><i>📒</i>বাকির খাতা</button><button class="sc" onclick="go('cashTab')"><i>💵</i>খরচের খাতা</button></div></div>
+<div class="box sect" style="margin-bottom:14px"><h3>আপনার ব্যবসার জন্য</h3><div class="sg"><button class="sc" onclick="go('parts')"><i>🔩</i>পার্টস / প্রডাক্ট</button><button class="sc" onclick="go('supTab')"><i>🚚</i>সাপ্লায়ার</button><button class="sc" onclick="go('vizTab')"><i>📊</i>গ্রাফ</button><button class="sc" onclick="go('reports')"><i>📈</i>লাভ ও রিপোর্ট</button></div></div>
+<div class="box sect"><h3>অন্যান্য</h3><div class="sg"><a class="sc" href="top20.html"><i>🏆</i>Top ২০</a><button class="sc" onclick="go('logTab')"><i>🕘</i>ইতিহাস</button><button class="sc" onclick="go('backupTab')"><i>💾</i>ব্যাকআপ ও পিন</button></div></div>
+<div class="box" style="margin-top:14px"><h2>কম স্টক (৫ বা তার কম)</h2><div class="actions" style="margin:0 0 10px"><button class="gold" onclick="openReorder()">🛒 কেনার তালিকা বানান (WhatsApp)</button></div><div id="lowStock" class="empty">এখনো কোনো পার্টস নেই।</div></div>
 <div class="cards">
 <div class="card"><div class="kicker">পার্টসের ধরন</div><div class="value" id="kParts">0</div></div>
 <div class="card"><div class="kicker">মোট স্টক (ইউনিট)</div><div class="value" id="kStock">0</div></div>
@@ -84,11 +90,6 @@ header{flex-direction:column;align-items:stretch}.htop{display:flex;justify-cont
 <div class="card"><div class="kicker">হাতে নগদ (হিসাবমতো)</div><div class="value" id="kCash">৳0</div></div>
 </div>
 <div class="box" style="margin-bottom:14px"><div class="row"><h2 style="flex:2">সময় অনুযায়ী রিপোর্ট</h2><select id="homePeriod" onchange="renderHomeRep()"><option value="d1">আজ</option><option value="d7" selected>১ সপ্তাহ (৭ দিন)</option><option value="d30">১ মাস (৩০ দিন)</option><option value="cm">এই মাস</option><option value="all">সব সময়</option></select></div><div id="homeRep"></div></div>
-<div class="box" style="margin-bottom:14px"><div class="bigbtns"><button class="bb" onclick="go('buy')"><span>📦</span>কেনা</button><button class="bb" onclick="go('sell')"><span>🛍️</span>বেচা</button></div></div>
-<div class="box sect" style="margin-bottom:14px"><h3>খাতা সমূহ</h3><div class="sg"><button class="sc" onclick="go('buy')"><i>📋</i>কেনার খাতা</button><button class="sc" onclick="go('sell')"><i>🧾</i>বেচার খাতা</button><button class="sc" onclick="go('dueTab')"><i>📒</i>বাকির খাতা</button><button class="sc" onclick="go('cashTab')"><i>💵</i>খরচের খাতা</button></div></div>
-<div class="box sect" style="margin-bottom:14px"><h3>আপনার ব্যবসার জন্য</h3><div class="sg"><button class="sc" onclick="go('parts')"><i>🔩</i>পার্টস / প্রডাক্ট</button><button class="sc" onclick="go('supTab')"><i>🚚</i>সাপ্লায়ার</button><button class="sc" onclick="go('vizTab')"><i>📊</i>গ্রাফ</button><button class="sc" onclick="go('reports')"><i>📈</i>লাভ ও রিপোর্ট</button></div></div>
-<div class="box sect"><h3>অন্যান্য</h3><div class="sg"><button class="sc" onclick="go('cashTab')"><i>🧮</i>টাকার খাতা</button><a class="sc" href="top20.html"><i>🏆</i>Top ২০</a><button class="sc" onclick="go('logTab')"><i>🕘</i>ইতিহাস</button><button class="sc" onclick="go('backupTab')"><i>💾</i>ব্যাকআপ ও পিন</button></div></div>
-<div class="box" style="margin-top:14px"><h2>কম স্টক (৫ বা তার কম)</h2><div class="actions" style="margin:0 0 10px"><button class="gold" onclick="openReorder()">🛒 কেনার তালিকা বানান (WhatsApp)</button></div><div id="lowStock" class="empty">এখনো কোনো পার্টস নেই।</div></div>
 <div class="box" style="margin-top:14px"><h2>ক্যাটাগরি অনুযায়ী মালামাল</h2><p class="note">সারিতে চাপ দিলে ওই ক্যাটাগরির পার্টস তালিকা খুলবে।</p><div class="tablewrap"><table style="min-width:480px"><thead><tr><th>ক্যাটাগরি</th><th>পার্টসের ধরন</th><th>মোট স্টক (পিস)</th><th>স্টকের ক্রয়মূল্য</th><th>কম স্টক</th></tr></thead><tbody id="catBody"></tbody></table></div></div>
 </section>
 <section id="parts" class="panel">
@@ -764,7 +765,7 @@ function render(){
   sellMore.style.display=sl.length>sellLimit?'':'none';
   let sums={};db.sales.forEach(x=>{let a=sums[x.pid]||(sums[x.pid]={name:pname(x),qty:0,sale:0,cost:0,profit:0});a.qty+=x.qty;a.sale+=x.total;a.cost+=x.cost;a.profit+=x.profit});
   profitBody.innerHTML=Object.values(sums).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.sale)}</td><td>${money(x.cost)}</td><td class="${x.profit>=0?'green':'red'}">${money(x.profit)}</td><td class="${x.profit>=0?'green':'red'}">${pct(x.profit,x.cost)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">বিক্রয় হলে এখানে লাভের হিসাব আসবে</td></tr>';
-  renderMoney();renderSup();renderCart();renderCust();updatePreview();renderViz();renderHomeRep();renderHStock();undoBtn.disabled=!undoStack.length;undoBtn.textContent='↩ Undo'+(undoStack.length?' ('+undoStack.length+')':'');redoBtn.disabled=!redoStack.length;redoBtn.textContent='↪ Redo'+(redoStack.length?' ('+redoStack.length+')':'');
+  renderMoney();renderSup();renderCart();renderCust();updatePreview();renderViz();renderHomeRep();renderHStock();renderHomeGraph();undoBtn.disabled=!undoStack.length;undoBtn.textContent='↩ Undo'+(undoStack.length?' ('+undoStack.length+')':'');redoBtn.disabled=!redoStack.length;redoBtn.textContent='↪ Redo'+(redoStack.length?' ('+redoStack.length+')':'');
   if(document.activeElement!==userName)userName.value=db.settings.user||'';
   const hasData=db.parts.length>0,lb=db.settings.lastBackup,days=lb?(Date.now()-lb)/864e5:null;
   backupNote.innerHTML=(driveDue()?`<div class="warn">☁ আজকের Google Drive ব্যাকআপ বাকি। <button class="sm gold" onclick="driveUpload(true)">এখনই পাঠান</button></div>`:'')+(loadWarn?`<div class="warn">⚠ ${esc(loadWarn)}</div>`:'')+(hasData&&(lb===null||days>7)?`<div class="warn">💾 ${lb===null?'এখনো কোনো ব্যাকআপ নেওয়া হয়নি।':'সর্বশেষ ব্যাকআপ '+Math.floor(days)+' দিন আগে।'} <a href="#" onclick="go('backupTab');return false">এখনই ব্যাকআপ নিন</a></div>`:'');
@@ -1060,6 +1061,97 @@ function renderViz(){
   const ord=[6,0,1,2,3,4,5],wm=Math.max(...wd,1),bars='<svg viewBox="0 0 320 190"><defs><linearGradient id="gB" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#18e6dc"/><stop offset="1" stop-color="#7a63e0"/></linearGradient></defs>'+ord.map((d,i)=>{const h=wd[d]/wm*130,x=14+i*43;return '<rect x="'+x+'" y="'+(150-h)+'" width="28" height="'+Math.max(2,h)+'" rx="5" fill="url(#gB)"/><text x="'+(x+14)+'" y="170" text-anchor="middle" fill="#8f9bc4" font-size="19">'+new Date(2024,0,7+d).toLocaleDateString('bn-BD',{weekday:'short'})+'</text>'}).join('')+'</svg>';
   const cols=['#1fe0d6','#4a9cf0','#3a5af0','#c85ff0','#ff5c8a'];
   $('vizBody').innerHTML=cards+'<div class="vgrid" style="margin-top:12px"><div class="vc span2"><h3>নিট লাভ-লসের ঢেউ</h3>'+wave+'<div class="note" style="color:#8f9bc4">নীল = লাভের সময়, গোলাপি = লসের সময় (লাভ − দোকানের খরচ)</div></div><div class="vc span2"><h3>বিক্রয় বনাম গ্রস লাভ</h3>'+lines+'</div><div class="vc"><h3>ক্যাটাগরি অনুযায়ী বিক্রয়</h3>'+vDonut(cat,cols,money(tot))+'</div><div class="vc"><h3>আদায় বনাম বাকি</h3>'+vDonut([{l:'আদায়',v:Math.max(0,tot-due)},{l:'বাকি',v:due}],['#c85ff0','#ff5c8a'],'বাকি '+vSh(due))+'</div><div class="vc span2"><h3>সপ্তাহের কোন দিন কত বিক্রয়</h3>'+bars+'</div></div>';
+}
+
+
+function renderHomeGraph(){
+  const el=$('homeGraph');if(!el)return;
+  if(!db.sales.length&&!db.purchases.length&&!(db.cash||[]).some(c=>c.kind==='exp')){el.innerHTML='<div class="note">বিক্রয়, ক্রয় বা খরচ এন্ট্রি দিলে এখানে গ্রাফ দেখা যাবে।</div>';return}
+  const val=$('homeGPeriod').value,isD=val[0]==='d',N=isD?+val.slice(1):6,now=new Date();
+  const idx=t=>{const d=new Date(t);return isD?Math.round((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()))/864e5):(d.getFullYear()*12+d.getMonth())-(now.getFullYear()*12+now.getMonth())};
+  const z=()=>Array(N).fill(0),S=z(),P=z(),E=z();
+  const add=(arr,t,v)=>{const i=idx(t)+N-1;if(i>=0&&i<N)arr[i]+=v};
+  db.sales.forEach(x=>add(S,x.ts,x.total));
+  db.purchases.forEach(x=>add(P,x.ts,x.total));
+  (db.cash||[]).forEach(c=>{if(c.kind==='exp')add(E,c.ts,c.amount)});
+  const lab=[...Array(N)].map((_,i)=>{const k=i-(N-1);
+    if(isD){if(N>7&&!(i%5===0||i===N-1))return '';const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k);return N<=7?d.toLocaleDateString('bn-BD',{weekday:'short'}):d.toLocaleDateString('bn-BD',{day:'numeric',month:'short'})}
+    return new Date(now.getFullYear(),now.getMonth()+k,1).toLocaleDateString('bn-BD',{month:'short'})});
+  const sum=a=>r2(a.reduce((x,y)=>x+y,0));
+  const W=600,H=220,t=14,b=30,m=Math.max(...S,...P,...E,1),X=i=>20+i*(W-40)/Math.max(1,N-1),Y=v=>t+(m-v)/m*(H-t-b);
+  const line=(a,c,dash)=>'<path d="'+vSmooth(a.map((v,i)=>[X(i),Y(v)]))+'" fill="none" stroke="'+c+'" stroke-width="3"'+(dash?' stroke-dasharray="6 5"':'')+' stroke-linecap="round"/>';
+  const grid=[0,1,2,3].map(i=>{const y=Y(m*i/3);return '<line x1="0" x2="'+W+'" y1="'+y+'" y2="'+y+'" stroke="#e3e7ef"/>'}).join('');
+  const xl=lab.map((s,i)=>s?'<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle" fill="#6b7590" font-size="19">'+s+'</text>':'').join('');
+  const sw=c=>'<i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:'+c+';margin-right:4px"></i>';
+  el.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto">'+grid+line(S,'#1f7ae0')+line(P,'#e08a00')+line(E,'#d9416a',true)+xl+'</svg>'
+    +'<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:13px;margin-top:6px">'
+    +'<span>'+sw('#1f7ae0')+'বিক্রি '+money(sum(S))+'</span><span>'+sw('#e08a00')+'ক্রয় '+money(sum(P))+'</span><span>'+sw('#d9416a')+'খরচ '+money(sum(E))+'</span></div>';
+}
+
+function dailyCanvas(){
+  const a=new Date();a.setHours(0,0,0,0);const t0=a.getTime();
+  const S=db.sales.filter(x=>x.ts>=t0),P=db.purchases.filter(x=>x.ts>=t0),E=(db.cash||[]).filter(c=>c.kind==='exp'&&c.ts>=t0);
+  const sum=(arr,f)=>r2(arr.reduce((z,x)=>z+f(x),0));
+  const sale=sum(S,x=>x.total),profit=sum(S,x=>x.profit),buy=sum(P,x=>x.total),exp=sum(E,x=>x.amount),
+        recv=sum(S,x=>x.paid+(x.collected||0)),due=sum(S,x=>x.due>0?x.due:0);
+  const rows=[{l:'JS MOTORS',sz:26,b:1,c:1},{l:'দৈনিক হিসাব',sz:18,c:1},{l:new Date().toLocaleDateString('bn-BD',{dateStyle:'full'}),sz:15,c:1},{line:1},
+    {l:'মোট বিক্রয়',r:money(sale),sz:17},{l:'গ্রস লাভ',r:money(profit),sz:17},{l:'ক্রয়',r:money(buy),sz:17},
+    {l:'দোকানের খরচ',r:money(exp),sz:17},{l:'নগদ আদায়',r:money(recv),sz:17},{l:'বাকি',r:money(due),sz:17},
+    {l:'নিট লাভ (লাভ − খরচ)',r:money(r2(profit-exp)),sz:18,b:1},{line:1},{l:'বিক্রয়ের বিবরণ',sz:18,b:1}];
+  if(!S.length)rows.push({l:'আজ কোনো বিক্রয় নেই',sz:15});
+  S.slice(0,60).forEach(x=>rows.push({l:pname(x)+' × '+x.qty+'  '+(x.customer||''),r:money(x.total),sz:15}));
+  rows.push({line:1},{l:'ক্রয়ের বিবরণ',sz:18,b:1});
+  if(!P.length)rows.push({l:'আজ কোনো ক্রয় নেই',sz:15});
+  P.slice(0,60).forEach(x=>rows.push({l:pname(x)+' × '+x.qty+'  '+(x.supplier||''),r:money(x.total),sz:15}));
+  rows.push({line:1},{l:'খরচের বিবরণ',sz:18,b:1});
+  if(!E.length)rows.push({l:'আজ কোনো খরচ নেই',sz:15});
+  E.slice(0,60).forEach(c=>rows.push({l:(c.note||'খরচ'),r:money(c.amount),sz:15}));
+  const W=620,H=60+rows.length*34,cv=document.createElement('canvas'),K=2;
+  cv.width=W*K;cv.height=H*K;
+  const g=cv.getContext('2d'),F="'Noto Sans Bengali',system-ui,sans-serif";
+  g.scale(K,K);g.fillStyle='#fff';g.fillRect(0,0,W,H);g.fillStyle='#172033';g.textBaseline='middle';
+  rows.forEach((r,i)=>{const y=30+i*34;
+    if(r.line){g.fillStyle='#d8dee8';g.fillRect(20,y,W-40,1);g.fillStyle='#172033';return}
+    g.font=(r.b?'bold ':'')+r.sz+'px '+F;
+    if(r.c){g.textAlign='center';g.fillText(r.l,W/2,y)}
+    else{g.textAlign='left';g.fillText(r.l,20,y);if(r.r){g.textAlign='right';g.fillText(r.r,W-20,y)}}
+  });
+  return cv;
+}
+
+// Builds a real single-page PDF (image based, so Bengali renders correctly offline)
+async function makePdf(cv){
+  const jpg=new Uint8Array(await new Promise(res=>cv.toBlob(b=>b.arrayBuffer().then(buf=>res(new Uint8Array(buf))),'image/jpeg',0.92)));
+  const W=cv.width,H=cv.height,enc=new TextEncoder(),parts=[],off=[];let len=0;
+  const push=x=>{const u=typeof x==='string'?enc.encode(x):x;parts.push(u);len+=u.length};
+  const obj=(n,body)=>{off[n]=len;push(n+' 0 obj\n'+body+'\nendobj\n')};
+  push('%PDF-1.4\n');
+  obj(1,'<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2,'<< /Type /Pages /Kids [3 0 R] /Count 1 >>');
+  obj(3,'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 '+W+' '+H+'] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>');
+  off[4]=len;
+  push('4 0 obj\n<< /Type /XObject /Subtype /Image /Width '+W+' /Height '+H+' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length '+jpg.length+' >>\nstream\n');
+  push(jpg);push('\nendstream\nendobj\n');
+  const cs='q '+W+' 0 0 '+H+' 0 0 cm /Im0 Do Q';
+  obj(5,'<< /Length '+cs.length+' >>\nstream\n'+cs+'\nendstream');
+  const xref=len;
+  let x='xref\n0 6\n0000000000 65535 f \n';
+  for(let i=1;i<=5;i++)x+=String(off[i]).padStart(10,'0')+' 00000 n \n';
+  x+='trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+xref+'\n%%EOF\n';
+  push(x);
+  return new Blob(parts,{type:'application/pdf'});
+}
+
+async function dailyPdf(){
+  const cv=dailyCanvas();
+  const blob=await makePdf(cv);
+  const name='JS-Motors-daily-'+new Date().toISOString().slice(0,10)+'.pdf';
+  const f=new File([blob],name,{type:'application/pdf'});
+  if(navigator.canShare&&navigator.canShare({files:[f]})){
+    try{await navigator.share({files:[f],title:'JS Motors দৈনিক হিসাব'})}catch(_){}
+  }else{
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+  }
 }
 
 
