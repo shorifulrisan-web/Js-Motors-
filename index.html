@@ -57,14 +57,19 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
 #toast.show{display:flex}#toast button{padding:7px 11px;white-space:nowrap}
 @media(min-width:700px){.modal{align-items:center}.sheet{border-radius:16px}}
 @media(max-width:600px){.wrap{padding:12px}.value{font-size:21px}.tab{white-space:nowrap;padding:9px 11px}header{padding:15px}.hright input{width:120px}}
-.hstock{flex-basis:100%;text-align:right;line-height:1.15}.hstock small{display:block;font-size:11px;color:#d9c18a;letter-spacing:.4px}.hstock b{font-size:22px;color:#fff;font-weight:800}
+header{flex-direction:column;align-items:stretch}.htop{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hstock{cursor:pointer;text-align:right;line-height:1.2;background:#ffffff14;border-radius:12px;padding:7px 12px;user-select:none}.hstock small{display:block;font-size:11px;color:#d9c18a;letter-spacing:.3px}.hstock b{font-size:20px;color:#fff;font-weight:800}
+.hday{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.hday>div{background:#ffffff14;border-radius:12px;padding:9px 6px;text-align:center}.hday small{display:block;font-size:11px;color:#d9c18a}.hday b{font-size:19px;color:#fff;font-weight:800}
+.bigbtns{display:grid;grid-template-columns:1fr 1fr;gap:12px}.bb{background:#f3f5f8;border-radius:12px;padding:18px 8px;font-size:17px;display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink)}.bb span{font-size:36px}
+.sect h3{padding-bottom:10px;border-bottom:1px solid var(--line);margin-bottom:10px}.sg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px}.sc{background:none;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 2px;font-size:12.5px;text-align:center;border-radius:10px;font-weight:650;line-height:1.3}.sc i{font-style:normal;font-size:30px}
 </style></head>
 <body>
-<header><div class="brand">JS MOTORS <small>PARTS & BUSINESS MANAGER</small></div>
-<div class="hright"><div class="hstock"><small>বর্তমান স্টক (ক্রয়মূল্যে)</small><b id="hStock">৳0</b></div><button id="installBtn" style="display:none" onclick="installApp()">📲 ইনস্টল</button><input id="userName" placeholder="আপনার নাম (ইতিহাসের জন্য)" onchange="setUser(this.value)"><button id="undoBtn" onclick="undo()" disabled>↩ Undo</button><button id="redoBtn" onclick="redo()" disabled>↪ Redo</button><div class="pill">অফলাইন · V2</div></div></header>
+<header><div class="htop"><div class="brand">JS MOTORS <small>PARTS & BUSINESS MANAGER</small></div><div class="hstock" onclick="toggleStock()"><small>বর্তমান স্টক (ক্রয়মূল্যে) <span id="hEye">👁</span></small><b id="hStock">৳ ••••••</b></div></div>
+<div class="hday"><div><small>আজকের বিক্রয়</small><b id="hSale">৳0</b></div><div><small>আজকের লাভ</small><b id="hProfit">৳0</b></div><div><small>লাভের হার</small><b id="hPct">—</b></div></div>
+<div class="hright"><button id="installBtn" style="display:none" onclick="installApp()">📲 ইনস্টল</button><input id="userName" placeholder="আপনার নাম (ইতিহাসের জন্য)" onchange="setUser(this.value)"><button id="undoBtn" onclick="undo()" disabled>↩ Undo</button><button id="redoBtn" onclick="redo()" disabled>↪ Redo</button><div class="pill">অফলাইন · V2</div></div></header>
 <div class="wrap">
 <nav class="tabs">
-<button class="tab active" data-tab="home">ড্যাশবোর্ড</button><button class="tab" data-tab="parts">পার্টস</button><button class="tab" data-tab="buy">ক্রয়</button><button class="tab" data-tab="sell">বিক্রয়</button><button class="tab" data-tab="dueTab">বাকি আদায়</button><button class="tab" data-tab="cashTab">টাকার খাতা</button><button class="tab" data-tab="vizTab">📊 গ্রাফ</button><button class="tab" data-tab="reports">লাভ ও রিপোর্ট</button><button class="tab" data-tab="logTab">ইতিহাস</button><button class="tab" data-tab="backupTab">ব্যাকআপ</button>
+<button class="tab active" data-tab="home">ড্যাশবোর্ড</button><button class="tab" data-tab="parts">পার্টস</button><button class="tab" data-tab="buy">ক্রয়</button><button class="tab" data-tab="sell">বিক্রয়</button><button class="tab" data-tab="dueTab">বাকি আদায়</button><button class="tab" data-tab="supTab">সাপ্লায়ার</button><button class="tab" data-tab="cashTab">টাকার খাতা</button><button class="tab" data-tab="vizTab">📊 গ্রাফ</button><button class="tab" data-tab="reports">লাভ ও রিপোর্ট</button><button class="tab" data-tab="logTab">ইতিহাস</button><button class="tab" data-tab="backupTab">ব্যাকআপ</button>
 </nav>
 <section id="home" class="panel active">
 <div id="backupNote"></div>
@@ -79,7 +84,10 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
 <div class="card"><div class="kicker">হাতে নগদ (হিসাবমতো)</div><div class="value" id="kCash">৳0</div></div>
 </div>
 <div class="box" style="margin-bottom:14px"><div class="row"><h2 style="flex:2">সময় অনুযায়ী রিপোর্ট</h2><select id="homePeriod" onchange="renderHomeRep()"><option value="d1">আজ</option><option value="d7" selected>১ সপ্তাহ (৭ দিন)</option><option value="d30">১ মাস (৩০ দিন)</option><option value="cm">এই মাস</option><option value="all">সব সময়</option></select></div><div id="homeRep"></div></div>
-<div class="box"><h2>দ্রুত কাজ</h2><div class="actions"><button class="primary" onclick="go('parts')">+ পার্টস যোগ</button><button class="primary" onclick="go('buy')">+ মাল ক্রয়</button><button class="gold" onclick="go('sell')">+ বিক্রয় করুন</button></div><p class="note">স্টক বাড়াতে ক্রয় এন্ট্রি করুন। বিক্রয় এন্ট্রি করলে স্টক কমবে এবং বিক্রিত পণ্যের ক্রয়মূল্য ধরে লাভ হিসাব হবে। ভুল হলে এডিট/ডিলিট করুন বা উপরের ↩ Undo চাপুন।</p></div>
+<div class="box" style="margin-bottom:14px"><div class="bigbtns"><button class="bb" onclick="go('buy')"><span>📦</span>কেনা</button><button class="bb" onclick="go('sell')"><span>🛍️</span>বেচা</button></div></div>
+<div class="box sect" style="margin-bottom:14px"><h3>খাতা সমূহ</h3><div class="sg"><button class="sc" onclick="go('buy')"><i>📋</i>কেনার খাতা</button><button class="sc" onclick="go('sell')"><i>🧾</i>বেচার খাতা</button><button class="sc" onclick="go('dueTab')"><i>📒</i>বাকির খাতা</button><button class="sc" onclick="go('cashTab')"><i>💵</i>খরচের খাতা</button></div></div>
+<div class="box sect" style="margin-bottom:14px"><h3>আপনার ব্যবসার জন্য</h3><div class="sg"><button class="sc" onclick="go('parts')"><i>🔩</i>পার্টস / প্রডাক্ট</button><button class="sc" onclick="go('supTab')"><i>🚚</i>সাপ্লায়ার</button><button class="sc" onclick="go('vizTab')"><i>📊</i>গ্রাফ</button><button class="sc" onclick="go('reports')"><i>📈</i>লাভ ও রিপোর্ট</button></div></div>
+<div class="box sect"><h3>অন্যান্য</h3><div class="sg"><button class="sc" onclick="go('cashTab')"><i>🧮</i>টাকার খাতা</button><a class="sc" href="top20.html"><i>🏆</i>Top ২০</a><button class="sc" onclick="go('logTab')"><i>🕘</i>ইতিহাস</button><button class="sc" onclick="go('backupTab')"><i>💾</i>ব্যাকআপ ও পিন</button></div></div>
 <div class="box" style="margin-top:14px"><h2>কম স্টক (৫ বা তার কম)</h2><div class="actions" style="margin:0 0 10px"><button class="gold" onclick="openReorder()">🛒 কেনার তালিকা বানান (WhatsApp)</button></div><div id="lowStock" class="empty">এখনো কোনো পার্টস নেই।</div></div>
 <div class="box" style="margin-top:14px"><h2>ক্যাটাগরি অনুযায়ী মালামাল</h2><p class="note">সারিতে চাপ দিলে ওই ক্যাটাগরির পার্টস তালিকা খুলবে।</p><div class="tablewrap"><table style="min-width:480px"><thead><tr><th>ক্যাটাগরি</th><th>পার্টসের ধরন</th><th>মোট স্টক (পিস)</th><th>স্টকের ক্রয়মূল্য</th><th>কম স্টক</th></tr></thead><tbody id="catBody"></tbody></table></div></div>
 </section>
@@ -108,6 +116,10 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:24px}
 <section id="dueTab" class="panel"><div class="cards"><div class="card"><div class="kicker">মোট বাকি</div><div class="value red" id="dTotal">৳0</div></div><div class="card"><div class="kicker">বাকি আছে এমন কাস্টমার</div><div class="value" id="dCount">0</div></div></div>
 <div class="box"><div class="row"><h2 style="flex:2">কাস্টমারের বাকি</h2><input id="dueSearch" placeholder="নাম বা ফোন খুঁজুন" oninput="render()"></div><div id="dueList"></div><p class="note">"টাকা পেলাম" চাপলে টাকা সবচেয়ে পুরনো বাকি থেকে আগে কাটা হয়; আংশিক টাকাও নেওয়া যায়। আদায়ের এন্ট্রি "টাকার খাতা"-য় দেখা যায় এবং সেখান থেকে ভুল হলে মোছা যায়।</p></div>
 <div class="box" style="margin-top:14px"><div class="row"><h2 style="flex:2">সাপ্লায়ারের পাওনা (আমাদের দিতে বাকি)</h2><div class="card" style="flex:1;padding:8px 12px"><div class="kicker">মোট</div><div class="value red" id="dSup" style="font-size:18px;margin:0">৳0</div></div></div><div id="supList"></div><p class="note">মাল কেনার সময় "পরিশোধ টাকা" কম দিলে বাকি এখানে জমা হয়। টাকা দিলে "টাকা দিলাম" চাপুন; এন্ট্রি টাকার খাতায় খরচ হিসেবে যায়।</p></div></section>
+<section id="supTab" class="panel"><div class="cards"><div class="card"><div class="kicker">মোট সাপ্লায়ার</div><div class="value" id="supCnt">0</div></div><div class="card"><div class="kicker">মোট মাল ক্রয় (সব সময়)</div><div class="value" id="supTotal">৳0</div></div></div>
+<div class="box"><h2>কোন প্রডাক্টে কত % ইনভেস্ট হয়েছে</h2><div class="tablewrap"><table style="min-width:340px"><thead><tr><th>প্রডাক্ট</th><th>পিস</th><th>টাকা</th><th>মোট ক্রয়ের %</th></tr></thead><tbody id="supProd"></tbody></table></div></div>
+<div class="box" style="margin:14px 0"><div class="row"><h2 style="flex:2">কার কাছ থেকে কত টাকার মাল</h2><input id="supSearch" placeholder="নাম বা ফোন খুঁজুন" oninput="renderSup()"></div><p class="note">প্রতিটি সাপ্লায়ারের নিচে দেখুন তাঁর কাছ থেকে কোন প্রডাক্টে কত টাকা ও কত % মাল এসেছে। <a class="lnk" href="top20.html">🏆 Top ২০</a></p></div>
+<div id="supCards"></div></section>
 <section id="cashTab" class="panel"><div class="cards"><div class="card"><div class="kicker">হাতে নগদ (হিসাবমতো)</div><div class="value" id="cCash">৳0</div></div><div class="card"><div class="kicker">এই সময়ে মোট জমা</div><div class="value green" id="cIn">৳0</div></div><div class="card"><div class="kicker">এই সময়ে মোট খরচ ও উত্তোলন</div><div class="value red" id="cOut">৳0</div></div></div>
 <div class="box"><h2>খরচ / মালিকের উত্তোলন / শুরুর নগদ যোগ</h2><div class="grid">
 <div><label>ধরন</label><select id="cKind" onchange="cashKindChg()"><option value="exp">দোকানের খরচ</option><option value="draw">মালিকের উত্তোলন (টাকা নিলাম)</option><option value="open">শুরুর নগদ জমা</option></select></div>
@@ -381,7 +393,7 @@ const diffLines=a=>a.filter(([l,x,y])=>String(x??'')!==String(y??'')).map(([l,x,
 function deleteFlow(heading,desc,fn){
   const r=dryRun(fn);if(r.err){alert(r.err);return}
   const imp=[['মোট স্টক','stock',v=>v],['মোট ক্রয়','buy',money],['মোট বিক্রয়','sales',money],['মোট লাভ','profit',money]].filter(([,k])=>r.before[k]!==r.after[k]).map(([l,k,f])=>l+': '+f(r.before[k])+' → '+f(r.after[k]));
-  if(confirm(heading+'\n'+desc.join('\n')+'\n\nপ্রভাব (স্টক ও লাভ স্বয়ংক্রিয়ভাবে নতুন করে হিসাব হবে):\n'+(imp.join('\n')||'কোনো পরিবর্তন নেই')+'\n\nমুছে ফেলবেন? (ভুল হলে ↩ Undo করা যাবে)'))apply(fn);
+  if(confirm(heading+'\n'+desc.join('\n')+'\n\nপ্রভাব (স্টক ও লাভ স্বয়ংক্রিয়ভাবে নতুন করে হিসাব হবে):\n'+(imp.join('\n')||'কোনো পরিবর্তন নেই')+'\n\nমুছে ফেলবেন? (ভুল হলে ↩ Undo করা যাবে)')&&pinOk())apply(fn);
 }
 
 /* ===================== Modal ===================== */
@@ -407,7 +419,7 @@ function addPart(){
   if(n.smin&&n.smax&&n.smin>n.smax)return alert('সর্বনিম্ন দাম সর্বোচ্চ দামের চেয়ে বেশি হতে পারে না');
   const ph=pendingPhoto;
   if(apply(d=>{d.parts.push(n);return{type:'part',action:'add',text:'নতুন পার্টস যোগ: '+name,details:['ক্যাটাগরি: '+n.cat+(n.code?', কোড: '+n.code:'')+', সতর্কতা সীমা: '+n.min+(n.smin||n.smax?', বিক্রয়সীমা: '+rangeText(n):'')+(ph?', ছবিসহ':'')],ph:ph?{[n.id]:null}:undefined}})){
-    pName.value='';pCode.value='';pCatNew.value='';pSmin.value='';pSmax.value='';
+    pName.value='';pCode.value='';pCatNew.value='';pSmin.value='';pSmax.value='';pMin.value=5;pCat.selectedIndex=0;toggleCatNew('pCat','pCatNew');
     if(ph){photos[n.id]=ph;persistPhotos();clearPhoto();render()}
   }
 }
@@ -450,7 +462,7 @@ function purchase(){
   if(badPhone(sph))return alert('সাপ্লায়ারের ফোন নম্বর সঠিক নয়');
   const pd=buyPaid.value===''?-1:+buyPaid.value;if(pd!==-1&&(!(pd>=0)||pd>q*c+1e-9))return alert('পরিশোধের টাকা ঠিক নয় (মোট মূল্যের বেশি হতে পারে না)');
   if(apply(d=>{const p=d.parts.find(x=>x.id===pid);d.purchases.unshift({id:uid(),ts:nextTs(),date:today(),pid,name:p.name,qty:q,cost:c,total:r2(q*c),supplier:sup,sphone:sph,paid:pd});
-    return{type:'buy',action:'add',text:'ক্রয় যোগ: '+p.name+' × '+q,details:['একক মূল্য '+money(c)+', মোট '+money(q*c)+(sup?', সাপ্লায়ার: '+sup:'')+(sph?', ফোন: '+sph:'')+(pd>=0&&pd<q*c?', পরিশোধ '+money(pd)+', বাকি '+money(r2(q*c-pd)):'')],toast:'ক্রয় সংরক্ষণ হয়েছে; স্টক বেড়েছে।'}})){supplier.value='';supplierPhone.value='';buyPaid.value=''}
+    return{type:'buy',action:'add',text:'ক্রয় যোগ: '+p.name+' × '+q,details:['একক মূল্য '+money(c)+', মোট '+money(q*c)+(sup?', সাপ্লায়ার: '+sup:'')+(sph?', ফোন: '+sph:'')+(pd>=0&&pd<q*c?', পরিশোধ '+money(pd)+', বাকি '+money(r2(q*c-pd)):'')],toast:'ক্রয় সংরক্ষণ হয়েছে; স্টক বেড়েছে।'}})){supplier.value='';supplierPhone.value='';buyPaid.value='';buyQty.value=1;buyCost.value='';buyCode.value='';buyPartS.value='';addOptions()}
 }
 function editBuy(id){
   const x=db.purchases.find(t=>t.id===id);if(!x)return;
@@ -497,7 +509,7 @@ function sale(){
   const sid=uid();
   if(apply(d=>{const dp=d.parts.find(x=>x.id===pid);dp.price=price;d.sales.unshift({id:sid,ts:nextTs(),date:today(),pid,name:p.name,qty:q,price,paid,customer:cust,cphone:cph,seller:sel});
     return{type:'sale',action:'add',text:'বিক্রয় যোগ: '+p.name+' × '+q,details:['একক দাম '+money(price)+', মোট বিল '+money(q*price)+', জমা '+money(paid)+(cust?', কাস্টমার: '+cust:'')+(cph?', ফোন: '+cph:'')+(sel?', বিক্রেতা: '+sel:'')]}})){
-    const s=db.sales.find(x=>x.id===sid);toast('বিক্রয় সংরক্ষণ হয়েছে। মোট লাভ: '+money(s.profit),true);customer.value='';customerPhone.value='';
+    const s=db.sales.find(x=>x.id===sid);toast('বিক্রয় সংরক্ষণ হয়েছে। মোট লাভ: '+money(s.profit),true);customer.value='';customerPhone.value='';sellQty.value=1;sellPrice.value='';sellPaid.value=0;sellCode.value='';sellPartS.value='';addOptions();updatePreview();
   }
 }
 function editSale(id){
@@ -546,7 +558,7 @@ function saleCart(){
     lines.forEach(c=>{const p=d.parts.find(x=>x.id===c.pid);p.price=c.price;const t=r2(c.qty*c.price),pd=Math.min(left,t);left=r2(left-pd);
       d.sales.unshift({id:uid(),ts:nextTs(),date:today(),pid:c.pid,name:p.name,qty:c.qty,price:c.price,paid:pd,customer:cust,cphone:cph,seller:sel,bid})});
     return{type:'sale',action:'add',text:'বিল বিক্রয়: '+lines.length+'টি পার্টস, মোট '+money(total),details:lines.map(c=>(part(c.pid)?.name||'?')+' × '+c.qty+' @ '+money(c.price)).concat(['জমা '+money(paid)+', বাকি '+money(r2(total-paid))+(cust?', কাস্টমার: '+cust:'')+(cph?', ফোন: '+cph:'')+(sel?', বিক্রেতা: '+sel:'')]),toast:'বিল সংরক্ষণ হয়েছে। মোট '+money(total)+(total>paid?', বাকি '+money(r2(total-paid)):'')}})){
-    cart=[];customer.value='';customerPhone.value='';sellPaid.value=0;render();
+    cart=[];customer.value='';customerPhone.value='';sellPaid.value=0;sellQty.value=1;sellPrice.value='';sellCode.value='';sellPartS.value='';fixT='';fixP='';render();
   }
 }
 const defPrice=p=>p.smin>0?p.smin:(p.price>0?p.price:Math.ceil(avgCost(p)*1.2));
@@ -676,13 +688,33 @@ function payFlow(key){
     });
   });
 }
+function supAll(){
+  const g={};
+  [...db.purchases].sort(byTs).forEach(x=>{
+    const nm=(x.supplier||'').trim(),k=nm?nm.toLowerCase():'__none__';
+    const a=g[k]||(g[k]={key:k,name:nm||'সাপ্লায়ারের নাম নেই',phone:'',total:0,due:0,n:0,items:{}});
+    if(x.sphone&&!a.phone)a.phone=x.sphone;
+    a.total=r2(a.total+x.total);a.due=r2(a.due+(x.due>0?x.due:0));a.n++;
+    const pn=pname(x),it=a.items[pn]||(a.items[pn]={q:0,v:0});it.q+=x.qty;it.v=r2(it.v+x.total);
+  });
+  return Object.values(g).sort((a,b)=>b.total-a.total);
+}
+function renderSup(){
+  const q=(supSearch.value||'').toLowerCase(),L=supAll(),T=r2(L.reduce((z,g)=>z+g.total,0));
+  supTotal.textContent=money(T);supCnt.textContent=L.length;
+  const pm={};db.purchases.forEach(x=>{const k=pname(x),a=pm[k]||(pm[k]={q:0,v:0});a.q+=x.qty;a.v+=x.total});
+  supProd.innerHTML=Object.entries(pm).sort((a,b)=>b[1].v-a[1].v).map(([k,a])=>`<tr><td>${esc(k)}</td><td>${a.q}</td><td>${money(a.v)}</td><td><b>${pct(a.v,T)}</b><div style="height:6px;border-radius:4px;background:var(--gold);width:${T?Math.round(a.v/T*100):0}%"></div></td></tr>`).join('')||'<tr><td colspan="4" class="empty">ক্রয় এন্ট্রি দিলে হিসাব আসবে</td></tr>';
+  supCards.innerHTML=L.filter(g=>(g.name+' '+g.phone).toLowerCase().includes(q)).map(g=>{
+    const its=Object.entries(g.items).sort((a,b)=>b[1].v-a[1].v);
+    return `<div class="box" style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><b style="font-size:17px">${esc(g.name)}</b>${g.phone?'<div class="note">📞 '+esc(g.phone)+'</div>':''}<div class="note">${g.n}টি ক্রয় · সব মালের ${pct(g.total,T)} এঁর কাছ থেকে</div></div><div style="text-align:right"><div style="font-size:21px;font-weight:800">${money(g.total)}</div>${g.due>0.004?'<div class="red note"><b>বাকি '+money(g.due)+'</b></div>':'<div class="green note">কোনো বাকি নেই</div>'}</div></div><div class="tablewrap"><table style="min-width:340px"><thead><tr><th>প্রডাক্ট</th><th>পিস</th><th>টাকা</th><th>এঁর মালের %</th></tr></thead><tbody>${its.map(([k,a])=>`<tr><td>${esc(k)}</td><td>${a.q}</td><td>${money(a.v)}</td><td>${pct(a.v,g.total)}</td></tr>`).join('')}</tbody></table></div><div class="actions" style="margin-top:8px">${g.due>0.004?`<button class="gold sm" data-act="payflow" data-id="${esc(g.key)}">💸 টাকা দিলাম</button>`:''}${g.phone?`<a class="lnk" href="${esc(telHref(g.phone))}">📞 কল</a>`:''}</div></div>`}).join('')||'<div class="box empty">কোনো সাপ্লায়ার পাওয়া যায়নি</div>';
+}
 function renderMoney(){
   const gross=r2(db.sales.reduce((z,x)=>z+x.profit,0)),exps=(db.cash||[]).filter(c=>c.kind==='exp'),totExp=r2(exps.reduce((z,c)=>z+c.amount,0)),net=r2(gross-totExp);
   const all=cashCalc(db,0),from=periodStart(),P=cashCalc(db,from),groups=dueGroups(),dueAll=r2(groups.reduce((z,g)=>z+g.due,0));
   kDue.textContent=money(dueAll);kCash.textContent=money(all.cash);rExp.textContent=money(totExp);rNet.textContent=money(net);rNet.className='value '+(net>=0?'green':'red');
   const sgs=supGroups(),supAll=r2(sgs.reduce((z,g)=>z+g.due,0));kSup.textContent=dSup.textContent=money(supAll);
   supList.innerHTML=sgs.map(g=>`<div style="padding:12px 0;border-bottom:1px solid var(--line)"><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><div><b>${esc(g.name)}</b>${g.phone?'<div class="note">📞 '+esc(g.phone)+'</div>':''}</div><div class="red" style="font-size:20px;font-weight:800">${money(g.due)}</div></div><ul class="dl">${g.items.map(x=>'<li>'+esc(pname(x))+' × '+x.qty+' — বাকি '+money(x.due)+' ('+esc(x.date)+')</li>').join('')}</ul><div class="actions" style="margin-top:8px"><button class="gold sm" data-act="payflow" data-id="${esc(g.key)}">💸 টাকা দিলাম</button>${g.phone?`<a class="lnk" href="${esc(telHref(g.phone))}">📞 কল</a>`:''}</div></div>`).join('')||'<div class="empty">সাপ্লায়ারের কাছে কোনো বাকি নেই</div>';
-  pinStatus.textContent=hasPin()?'🔒 পিন লক চালু আছে':'পিন লক বন্ধ আছে';
+  pinStatus.textContent=hasPin()?'🔒 পিন চালু — অ্যাপ খুলতে এবং যেকোনো তথ্য ডিলিট করতে এই পিন লাগবে':'পিন বন্ধ — এখন ডিলিট করতে পিন লাগছে না। পিন চালু করলে ডিলিটেও পিন চাইবে';
   dTotal.textContent=money(dueAll);dCount.textContent=groups.length;cCash.textContent=money(all.cash);
   const inn=r2(P.open+P.salesIn+P.collect),out=r2(P.buy+P.spay+P.exp+P.draw);cIn.textContent=money(inn);cOut.textContent=money(out);
   {const sel=cCat.value;cCat.innerHTML=expOpts(null);if(sel&&[...cCat.options].some(o=>o.value===sel))cCat.value=sel}
@@ -732,7 +764,7 @@ function render(){
   sellMore.style.display=sl.length>sellLimit?'':'none';
   let sums={};db.sales.forEach(x=>{let a=sums[x.pid]||(sums[x.pid]={name:pname(x),qty:0,sale:0,cost:0,profit:0});a.qty+=x.qty;a.sale+=x.total;a.cost+=x.cost;a.profit+=x.profit});
   profitBody.innerHTML=Object.values(sums).map(x=>`<tr><td>${esc(x.name)}</td><td>${x.qty}</td><td>${money(x.sale)}</td><td>${money(x.cost)}</td><td class="${x.profit>=0?'green':'red'}">${money(x.profit)}</td><td class="${x.profit>=0?'green':'red'}">${pct(x.profit,x.cost)}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">বিক্রয় হলে এখানে লাভের হিসাব আসবে</td></tr>';
-  renderMoney();renderCart();renderCust();updatePreview();renderViz();renderHomeRep();renderHStock();undoBtn.disabled=!undoStack.length;undoBtn.textContent='↩ Undo'+(undoStack.length?' ('+undoStack.length+')':'');redoBtn.disabled=!redoStack.length;redoBtn.textContent='↪ Redo'+(redoStack.length?' ('+redoStack.length+')':'');
+  renderMoney();renderSup();renderCart();renderCust();updatePreview();renderViz();renderHomeRep();renderHStock();undoBtn.disabled=!undoStack.length;undoBtn.textContent='↩ Undo'+(undoStack.length?' ('+undoStack.length+')':'');redoBtn.disabled=!redoStack.length;redoBtn.textContent='↪ Redo'+(redoStack.length?' ('+redoStack.length+')':'');
   if(document.activeElement!==userName)userName.value=db.settings.user||'';
   const hasData=db.parts.length>0,lb=db.settings.lastBackup,days=lb?(Date.now()-lb)/864e5:null;
   backupNote.innerHTML=(driveDue()?`<div class="warn">☁ আজকের Google Drive ব্যাকআপ বাকি। <button class="sm gold" onclick="driveUpload(true)">এখনই পাঠান</button></div>`:'')+(loadWarn?`<div class="warn">⚠ ${esc(loadWarn)}</div>`:'')+(hasData&&(lb===null||days>7)?`<div class="warn">💾 ${lb===null?'এখনো কোনো ব্যাকআপ নেওয়া হয়নি।':'সর্বশেষ ব্যাকআপ '+Math.floor(days)+' দিন আগে।'} <a href="#" onclick="go('backupTab');return false">এখনই ব্যাকআপ নিন</a></div>`:'');
@@ -798,7 +830,7 @@ function restoreAuto(i){
   }catch(e){alert('এই কপি ফিরিয়ে আনা যায়নি: '+e.message)}
 }
 function clearData(){
-  if(confirm('সত্যিই কি এই ডিভাইসের সব JS Motors ডেটা (পার্টস, ক্রয়, বিক্রয়) মুছে ফেলবেন? আগে ব্যাকআপ নিন।\n\n(ইতিহাস থাকবে; ↩ Undo করা যাবে)'))
+  if(confirm('সত্যিই কি এই ডিভাইসের সব JS Motors ডেটা (পার্টস, ক্রয়, বিক্রয়) মুছে ফেলবেন? আগে ব্যাকআপ নিন।\n\n(ইতিহাস থাকবে; ↩ Undo করা যাবে)')&&pinOk())
     apply(d=>{const n=d.parts.length,b=d.purchases.length,s=d.sales.length;d.parts=[];d.purchases=[];d.sales=[];d.cash=[];return{type:'system',action:'delete',text:'সব ডেটা মুছে ফেলা হয়েছে',details:['মুছে গেছে: পার্টস '+n+', ক্রয় '+b+', বিক্রয় '+s]}});
 }
 
@@ -912,6 +944,7 @@ function exportCsv(k){
 const PIN_KEY='jsmotors_pin';
 const hashPin=p=>{let h1=0xdeadbeef,h2=0x41c6ce57;const t='jsm:'+p;for(let i=0;i<t.length;i++){const c=t.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);return(4294967296*(2097151&h2)+(h1>>>0)).toString(36)};
 const hasPin=()=>{try{return !!localStorage.getItem(PIN_KEY)}catch(_){return false}};
+function pinOk(){if(!hasPin())return true;const v=prompt('ডিলিট করতে আপনার পিন লিখুন');if(v===null)return false;if(hashPin(v.trim())!==localStorage.getItem(PIN_KEY)){alert('পিন ঠিক নয়। কিছু মোছা হয়নি।');return false}return true}
 function lockNow(){if(hasPin()){lockScreen.style.display='flex';lockIn.value='';lockMsg.textContent=''}}
 function tryUnlock(){if(hashPin(lockIn.value.trim())===localStorage.getItem(PIN_KEY)){lockScreen.style.display='none';lockIn.value='';lockMsg.textContent=''}else{lockMsg.textContent='পিন ঠিক নয়';lockIn.value=''}}
 function setPin(){const v=pinNew.value.trim();if(!/^\d{4,8}$/.test(v))return alert('৪ থেকে ৮ সংখ্যার পিন দিন');try{localStorage.setItem(PIN_KEY,hashPin(v))}catch(_){return alert('পিন সংরক্ষণ করা যায়নি')}pinNew.value='';render();toast('পিন চালু হয়েছে। অ্যাপ খুললে বা ২ মিনিট পরে ফিরলে পিন চাইবে।',false)}
@@ -1030,7 +1063,15 @@ function renderViz(){
 }
 
 
-function renderHStock(){const v=r2(db.parts.reduce((z,p)=>z+p.batches.reduce((q,b)=>q+b.qty*b.cost,0),0));$('hStock').textContent=money(v)}
+let stockShown=false;
+function toggleStock(){stockShown=!stockShown;renderHStock()}
+function renderHStock(){
+  const v=r2(db.parts.reduce((z,p)=>z+p.batches.reduce((q,b)=>q+b.qty*b.cost,0),0));
+  $('hStock').textContent=stockShown?money(v):'৳ ••••••';$('hEye').textContent=stockShown?'🙈':'👁';
+  const a=new Date();a.setHours(0,0,0,0);const t0=a.getTime();let s=0,g=0,c=0;
+  db.sales.forEach(x=>{if(x.ts>=t0){s+=x.total;g+=x.profit;c+=x.cost}});
+  s=r2(s);g=r2(g);$('hSale').textContent=money(s);$('hProfit').textContent=money(g);$('hProfit').style.color=g<0?'#ff9bb0':'#fff';$('hPct').textContent=pct(g,c);
+}
 function renderHomeRep(){
   const v=$('homePeriod').value,now=new Date(),sd=n=>new Date(now.getFullYear(),now.getMonth(),now.getDate()-n).getTime();
   let a,p0;if(v==='all'){a=0;p0=null}else if(v==='cm'){a=new Date(now.getFullYear(),now.getMonth(),1).getTime();p0=new Date(now.getFullYear(),now.getMonth()-1,1).getTime()}else{const n=+v.slice(1);a=sd(n-1);p0=sd(2*n-1)}
